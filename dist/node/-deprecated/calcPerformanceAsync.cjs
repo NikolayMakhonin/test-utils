@@ -1,5 +1,7 @@
 'use strict';
 
+Object.defineProperty(exports, '__esModule', { value: true });
+
 var tslib = require('tslib');
 var rdtsc = require('rdtsc');
 
