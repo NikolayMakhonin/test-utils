@@ -1,5 +1,6 @@
 import funcEsDefault, {funcEs} from 'src/test/module-es'
-import funcCjs from './test/assets/module-cjs.cjs'
+// eslint-disable-next-line node/no-extraneous-import
+import funcCjs from 'assets'
 
 describe('test', function () {
   it('test', function () {
