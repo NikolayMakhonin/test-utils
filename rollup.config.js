@@ -15,6 +15,7 @@ import nycrc from './nyc.config.mjs'
 import { terser } from 'rollup-plugin-terser'
 import path from 'path'
 import pkg from './package.json'
+import copy from 'rollup-plugin-copy'
 
 const dev = !!process.env.ROLLUP_WATCH
 
@@ -56,22 +57,39 @@ const aliasOptions = {
       find       : 'src',
       replacement: path.resolve(__dirname, 'src'),
     },
+    {
+      find       : '~',
+      replacement: path.resolve(__dirname),
+    },
   ],
 }
 
-const nodeConfig = ({input, outputDir, relative}) => ({
+const nodeConfig = ({
+  input, assets, outputDir, relative, format, extension,
+}) => ({
   cache : true,
   input,
   output: {
     dir           : outputDir,
-    format        : 'cjs',
+    format        : format,
     exports       : 'named',
-    entryFileNames: `[name].cjs`,
-    chunkFileNames: '[name].cjs',
+    entryFileNames: '[name].' + extension,
+    chunkFileNames: '[name].' + extension,
     sourcemap     : dev,
   },
   plugins: [
-    del({ targets: outputDir }),
+    assets && copy({
+      targets: [
+        {
+          src : assets,
+          dest: outputDir,
+          rename(name, type, _path) {
+            console.log(arguments)
+            return path.relative(relative, _path)
+          },
+        },
+      ],
+    }),
     multiInput({relative}),
     alias(aliasOptions),
     json(),
@@ -153,13 +171,13 @@ const browserTestsConfig = {
     '!**/-deprecated/**',
   ],
   output: {
-    dir      : 'dist/browser',
+    dir      : 'dist/bundle',
     format   : 'iife',
     exports  : 'named',
     sourcemap: 'inline',
   },
   plugins: [
-    del({ targets: 'dist/browser/browser.test.js' }),
+    del({ targets: 'dist/bundle/browser.test.js' }),
     multiEntry({
       entryFileName: 'browser.test.js',
     }),
@@ -206,12 +224,21 @@ const browserTestsConfig = {
 export default [
   nodeConfig({
     input    : ['src/**/*.ts'],
-    outputDir: 'dist/node',
+    outputDir: 'dist/lib',
     relative : 'src',
+    format   : 'es',
+    extension: 'mjs',
+  }),
+  nodeConfig({
+    input    : ['src/**/*.ts'],
+    outputDir: 'dist/lib',
+    relative : 'src',
+    format   : 'cjs',
+    extension: 'cjs',
   }),
   browserConfig({
     input     : ['src/index.ts'],
-    outputDir : 'dist/browser',
+    outputDir : 'dist/bundle',
     outputFile: 'browser.js',
   }),
   browserTestsConfig,
