@@ -1,6 +1,6 @@
 {
   "name": "@flemist/test-utils",
-  "version": "0.0.2",
+  "version": "0.0.3",
   "description": "Small most frequently used platform independent test utils.",
   "main": "dist/lib/index.cjs",
   "module": "dist/lib/index.mjs",
@@ -21,8 +21,9 @@
       }
     },
     "./register": {
-      "import": "./dist/lib/register.mjs",
-      "require": "./dist/lib/register.cjs"
+      "types": "./dist/lib/register/register.d.ts",
+      "import": "./dist/lib/register/register.mjs",
+      "require": "./dist/lib/register/register.cjs"
     }
   },
   "engines": {
