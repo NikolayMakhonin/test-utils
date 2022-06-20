@@ -1,12 +1,29 @@
 {
   "name": "@flemist/test-utils",
-  "version": "0.0.1",
+  "version": "0.0.2",
   "description": "Small most frequently used platform independent test utils.",
   "main": "dist/lib/index.cjs",
   "module": "dist/lib/index.mjs",
   "types": "dist/lib/index.d.ts",
   "exports": {
-    ".": "./dist/lib/"
+    "./package.json": "./package.json",
+    ".": {
+      "types": "./dist/lib/index.d.ts",
+      "import": "./dist/lib/index.mjs",
+      "require": "./dist/lib/index.cjs",
+      "browser": {
+        "import": "./dist/lib/index.mjs",
+        "require": "./dist/lib/index.cjs"
+      },
+      "node": {
+        "import": "./dist/lib/index.mjs",
+        "require": "./dist/lib/index.cjs"
+      }
+    },
+    "./register": {
+      "import": "./dist/lib/register.mjs",
+      "require": "./dist/lib/register.cjs"
+    }
   },
   "engines": {
     "node": ">=10.4.0",
