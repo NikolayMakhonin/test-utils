@@ -15,7 +15,6 @@ import nycrc from './nyc.config.mjs'
 import { terser } from 'rollup-plugin-terser'
 import path from 'path'
 import pkg from './package.json'
-import copy from 'rollup-plugin-copy'
 
 const dev = !!process.env.ROLLUP_WATCH
 
@@ -65,7 +64,7 @@ const aliasOptions = {
 }
 
 const nodeConfig = ({
-  input, assets, outputDir, relative, format, extension,
+  input, outputDir, relative, format, extension,
 }) => ({
   cache : true,
   input,
@@ -78,18 +77,6 @@ const nodeConfig = ({
     sourcemap     : dev,
   },
   plugins: [
-    assets && copy({
-      targets: [
-        {
-          src : assets,
-          dest: outputDir,
-          rename(name, type, _path) {
-            console.log(arguments)
-            return path.relative(relative, _path)
-          },
-        },
-      ],
-    }),
     multiInput({relative}),
     alias(aliasOptions),
     json(),
