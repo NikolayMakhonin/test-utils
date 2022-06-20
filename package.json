@@ -1,10 +1,10 @@
 {
   "name": "@flemist/test-utils",
-  "version": "0.0.4",
+  "version": "0.0.5",
   "description": "Small most frequently used platform independent test utils.",
   "main": "dist/lib/index.cjs",
   "module": "dist/lib/index.mjs",
-  "types": "dist/lib/register/register.d.ts",
+  "types": "dist/lib/index.d.ts",
   "exports": {
     "./package.json": "./package.json",
     ".": {
