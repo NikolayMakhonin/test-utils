@@ -1,5 +1,5 @@
 'use strict';
 
-require('../register.cjs');
+require('./register.cjs');
 require('assert');
 

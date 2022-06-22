@@ -1,2 +1,2 @@
-import '../register.mjs';
+import './register.mjs';
 import 'assert';

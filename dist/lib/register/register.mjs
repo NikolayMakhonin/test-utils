@@ -1,2 +1,3 @@
-import '../register.mjs';
-import 'assert';
+import _assert from 'assert';
+
+global.assert = _assert;
