@@ -1,3 +1,5 @@
 'use strict';
 
-console.log('USER_AGENT: ' + window.navigator.userAgent);
+console.log(`USER_AGENT: ${typeof window !== 'undefined'
+    ? window.navigator.userAgent
+    : 'Node.JS'}`);
