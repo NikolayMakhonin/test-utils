@@ -10,6 +10,7 @@ specifiers:
   '@flemist/copy-glob-flat': 0.0.5
   '@flemist/karma-custom-launcher': 0.0.0
   '@flemist/test-variants': 0.0.14
+  '@flemist/time-controller': ^0.0.1
   '@rollup/plugin-alias': 3.1.9
   '@rollup/plugin-babel': 5.3.1
   '@rollup/plugin-commonjs': '=21.1.0'
@@ -52,6 +53,7 @@ specifiers:
   typescript: ^4.7.4
 
 dependencies:
+  '@flemist/time-controller': 0.0.1
   tslib: 2.4.0
 
 devDependencies:
@@ -1312,12 +1314,27 @@ packages:
       tslib: 2.4.0
     dev: true
 
+  /@flemist/pairing-heap/0.0.1:
+    resolution: {integrity: sha512-bsXb0bYvrhkibbWAURawIvcR09l5sgRsnFAAwGXr1F1TPZqBL9KMzB0QTlwmokKkd3ci5GqsUUWE1BzK80l6Rg==}
+    engines: {node: '>=10.4.0', pnpm: ^7.1.6}
+    dependencies:
+      tslib: 2.4.0
+    dev: false
+
   /@flemist/test-variants/0.0.14:
     resolution: {integrity: sha512-s2CHX4D2wyeSNTi1wTkpB4HqAuNSlXxiwJwvbQwZCGUclfalOKJxnG5t20S9lMx0y4cGNe8MAptXboD6jYzDDg==}
     engines: {node: '>=10.4.0', pnpm: ^7.1.6}
     dependencies:
       tslib: 2.4.0
     dev: true
+
+  /@flemist/time-controller/0.0.1:
+    resolution: {integrity: sha512-z2rddW0+5+fPc+rf3Irq1w1SCzxjYGmv6BrG98nuOXcByK0v+oIsAfslFQudUqJHxZ59fZ6WbzAlgRsLoFDYIw==}
+    engines: {node: '>=10.4.0', pnpm: ^7.1.6}
+    dependencies:
+      '@flemist/pairing-heap': 0.0.1
+      tslib: 2.4.0
+    dev: false
 
   /@humanwhocodes/config-array/0.9.5:
     resolution: {integrity: sha512-ObyMyWxZiCu/yTisA7uzx81s40xR2fD5Cg/2Kq7G02ajkNubJf6BopgDTmDyc3U7sXpNKM8cYOw7s7Tyr+DnCw==}

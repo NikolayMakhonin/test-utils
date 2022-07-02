@@ -1,6 +1,6 @@
 {
   "name": "@flemist/test-utils",
-  "version": "0.0.7",
+  "version": "0.0.8",
   "description": "Small most frequently used platform independent test utils.",
   "main": "dist/lib/index.cjs",
   "module": "dist/lib/index.mjs",
@@ -34,9 +34,7 @@
     "type": "git",
     "url": "git+https://github.com/NikolayMakhonin/test-utils.git"
   },
-  "keywords": [
-
-  ],
+  "keywords": [],
   "author": {
     "name": "Nikolay Makhonin",
     "url": "https://github.com/NikolayMakhonin/"
@@ -117,6 +115,7 @@
     "typescript": "^4.7.4"
   },
   "dependencies": {
+    "@flemist/time-controller": "^0.0.1",
     "tslib": "^2.4.0"
   }
 }
