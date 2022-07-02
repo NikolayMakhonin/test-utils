@@ -2,7 +2,7 @@
 
 Object.defineProperty(exports, '__esModule', { value: true });
 
-var await_await = require('./await/await.cjs');
+var await_await = require('./await.cjs');
 require('tslib');
 
 
