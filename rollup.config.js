@@ -7,6 +7,7 @@ import alias from '@rollup/plugin-alias'
 import replace from '@rollup/plugin-replace'
 import commonjs from '@rollup/plugin-commonjs'
 import json from '@rollup/plugin-json'
+import copy from 'rollup-plugin-cpy'
 import polyfills from 'rollup-plugin-node-polyfills'
 import inject from '@rollup/plugin-inject'
 import babel from '@rollup/plugin-babel'
@@ -66,19 +67,30 @@ const aliasOptions = {
 }
 
 const nodeConfig = ({
-  input, outputDir, relative, format, extension,
+  input, outputDir, relative, formats,
 }) => ({
   cache : true,
   input,
-  output: {
+  output: formats.map(({format, extension}) => ({
     dir           : outputDir,
     format        : format,
     exports       : 'named',
     entryFileNames: '[name].' + extension,
     chunkFileNames: '[name].' + extension,
     sourcemap     : dev,
-  },
+  })),
   plugins: [
+    !dev && del({ targets: path.join(outputDir, '*') }),
+    copy([
+      {
+        files  : '{**/assets/**,**/*.{js,cjs,mjs,json}}',
+        dest   : path.resolve(outputDir),
+        options: {
+          parents: true,
+          cwd    : 'src',
+        },
+      },
+    ]),
     multiInput({relative}),
     alias(aliasOptions),
     json(),
@@ -125,7 +137,7 @@ const nodeConfig = ({
   ]),
 })
 
-const browserConfig = ({input, outputDir, outputFile}) => ({
+const browserConfig = ({name, input, outputDir, outputFile}) => ({
   cache : true,
   input,
   output: {
@@ -135,9 +147,10 @@ const browserConfig = ({input, outputDir, outputFile}) => ({
     entryFileNames: outputFile,
     chunkFileNames: outputFile,
     sourcemap     : dev && 'inline',
+    name,
   },
   plugins: [
-    del({ targets: path.join(outputDir, outputFile) }),
+    !dev && del({ targets: path.join(outputDir, outputFile) }),
     alias(aliasOptions),
     json(),
     replace({
@@ -180,9 +193,9 @@ const browserConfig = ({input, outputDir, outputFile}) => ({
 const browserTestsConfig = {
   cache: true,
   input: [
-    'src/register/show-useragent.ts',
-    'src/register/register.ts',
-    'src/**/*.test.ts',
+    'src/browser/register/show-useragent.ts',
+    'src/browser/register/register.ts',
+    'src/{common,browser}/**/*.test.ts',
     '!**/-deprecated/**',
   ],
   output: {
@@ -192,7 +205,7 @@ const browserTestsConfig = {
     sourcemap: 'inline',
   },
   plugins: [
-    del({ targets: 'dist/bundle/browser.test.js' }),
+    !dev && del({ targets: 'dist/bundle/browser.test.js' }),
     multiEntry({
       entryFileName: 'browser.test.js',
     }),
@@ -240,18 +253,20 @@ export default [
     input    : ['src/**/*.ts'],
     outputDir: 'dist/lib',
     relative : 'src',
-    format   : 'es',
-    extension: 'mjs',
-  }),
-  nodeConfig({
-    input    : ['src/**/*.ts'],
-    outputDir: 'dist/lib',
-    relative : 'src',
-    format   : 'cjs',
-    extension: 'cjs',
+    formats  : [
+      {
+        format   : 'es',
+        extension: 'mjs',
+      },
+      {
+        format   : 'cjs',
+        extension: 'cjs',
+      },
+    ],
   }),
   browserConfig({
-    input     : ['src/index.ts'],
+    name      : 'TestUtils',
+    input     : ['src/browser/index.ts'],
     outputDir : 'dist/bundle',
     outputFile: 'browser.js',
   }),

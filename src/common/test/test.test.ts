@@ -1,4 +1,4 @@
-import funcEsDefault, {funcEs} from 'src/test/module-es'
+import funcEsDefault, {funcEs} from 'src/common/test/module-es'
 // eslint-disable-next-line node/no-extraneous-import
 import funcCjs from 'assets'
 

@@ -4,7 +4,7 @@ module.exports = {
   require: [
     'tsconfig-paths/register',
     'ts-node/register',
-    './src/register/register.ts',
+    './src/node/register/register.ts',
   ],
   'watch-files': ['./src/**'],
   ignore       : ['./**/*.d.ts', './**/-deprecated/**'],
