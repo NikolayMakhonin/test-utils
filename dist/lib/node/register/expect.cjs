@@ -4,11 +4,10 @@ Object.defineProperty(exports, '__esModule', { value: true });
 
 var expect = require('expect');
 
-function _interopDefaultLegacy (e) { return e && typeof e === 'object' && 'default' in e ? e : { 'default': e }; }
-
-var expect__default = /*#__PURE__*/_interopDefaultLegacy(expect);
-
-expect__default["default"].extend({
+// const _expect: typeof expect = typeof (expect as any).default === 'function'
+//   ? (expect as any).default
+//   : expect
+expect.expect.extend({
     or(received, ...expecteds) {
         function message() {
             return `expected ${expecteds
@@ -36,5 +35,5 @@ expect__default["default"].extend({
 
 Object.defineProperty(exports, 'default', {
     enumerable: true,
-    get: function () { return expect__default["default"]; }
+    get: function () { return expect.expect; }
 });

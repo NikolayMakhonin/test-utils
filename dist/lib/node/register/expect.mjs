@@ -1,6 +1,9 @@
-import expect from 'expect';
-export { default } from 'expect';
+import { expect } from 'expect';
+export { expect as default } from 'expect';
 
+// const _expect: typeof expect = typeof (expect as any).default === 'function'
+//   ? (expect as any).default
+//   : expect
 expect.extend({
     or(received, ...expecteds) {
         function message() {

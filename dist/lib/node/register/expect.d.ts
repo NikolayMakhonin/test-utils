@@ -1,4 +1,4 @@
-import expect from 'expect';
+import { expect } from 'expect';
 declare type ExpectExt = typeof expect & {
     or: (...args: any[]) => any;
 };
