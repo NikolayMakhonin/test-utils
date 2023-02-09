@@ -1,8 +1,12 @@
-import expect from 'expect'
+import { expect } from 'expect'
 
 type ExpectExt = typeof expect & {
   or: (...args: any[]) => any,
 }
+
+// const _expect: typeof expect = typeof (expect as any).default === 'function'
+//   ? (expect as any).default
+//   : expect
 
 expect.extend({
   or(received, ...expecteds: any[]) {

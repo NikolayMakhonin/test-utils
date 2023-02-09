@@ -1,6 +1,6 @@
 {
   "name": "@flemist/test-utils",
-  "version": "0.1.3",
+  "version": "0.1.4",
   "description": "Small most frequently used platform independent test utils.",
   "main": "dist/lib/node/index.cjs",
   "module": "dist/lib/node/index.mjs",
