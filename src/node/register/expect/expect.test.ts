@@ -51,12 +51,5 @@ describe('expect', function () {
       throw new Error('ERROR')
     }))
       .toThrowError(new Error('ERROR'))
-
-    // expect(() => expect(1).toStrictEqual(expect.custom(received => {
-    //   return {
-    //     pass   : received === 1,
-    //     message: () => `expected ${received} to be 1`,
-    //   }
-    // }))).toThrowError('expected 1 to be 1')
   })
 })
