@@ -1,4 +1,4 @@
-import {expectedToString} from './helpers'
+import {expectedToString, expectEquals} from './helpers'
 import {CustomMatch} from './contracts'
 
 export function expectOr(...expecteds: any[]): CustomMatch {
@@ -12,10 +12,7 @@ export function expectOr(...expecteds: any[]): CustomMatch {
 
     for (let i = 0, len = expecteds.length; i < len; i++) {
       const expected = expecteds[i]
-      const pass = expected
-        && typeof expected.asymmetricMatch === 'function'
-        && expected.asymmetricMatch(received)
-        || received === expected
+      const pass = expectEquals(received, expected)
       if (pass) {
         return {
           pass: true,
@@ -50,10 +47,7 @@ export function expectAnd(...expecteds: any[]): CustomMatch {
 
     for (let i = 0, len = expecteds.length; i < len; i++) {
       const expected = expecteds[i]
-      const pass = expected
-        && typeof expected.asymmetricMatch === 'function'
-        && expected.asymmetricMatch(received)
-        || received === expected
+      const pass = expectEquals(received, expected)
       if (!pass) {
         return {
           pass: false,

@@ -50,9 +50,15 @@
   },
   "typesVersions": {
     "*": {
-      "browser": ["./dist/lib/browser/index.d.ts"],
-      "node": ["./dist/lib/node/index.d.ts"],
-      "register": ["./dist/lib/node/register/register.d.ts"]
+      "browser": [
+        "./dist/lib/browser/index.d.ts"
+      ],
+      "node": [
+        "./dist/lib/node/index.d.ts"
+      ],
+      "register": [
+        "./dist/lib/node/register/register.d.ts"
+      ]
     }
   },
   "engines": {
@@ -146,7 +152,8 @@
     "expect": ">=24"
   },
   "dependencies": {
-    "@flemist/time-controller": "^0.0.1",
+    "@flemist/async-utils": "0.0.13",
+    "@flemist/time-controller": "0.0.1",
     "tslib": "^2.4.0"
   }
 }

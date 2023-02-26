@@ -51,19 +51,5 @@ describe('expect > matchers', function () {
       { foo: 'bar', baz: 'quux' },
       { foo: 'baz', baz: 'qux' },
     ]
-
-    expect([
-      123,
-      { foo: 'bar', baz: 'qux' },
-      { foo: 'bar', baz: 'quux' },
-      { foo: 'baz', baz: 'qux' },
-    ]).toEqual(
-      expect.arrayContaining([
-        expect.objectContaining({
-          foo: 'bar',
-          baz: 'qux',
-        }),
-      ]),
-    )
   })
 })

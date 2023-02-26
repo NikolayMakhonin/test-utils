@@ -7,6 +7,7 @@ specifiers:
   '@babel/plugin-transform-runtime': 7.19.6
   '@babel/preset-env': 7.20.2
   '@babel/runtime-corejs3': 7.20.13
+  '@flemist/async-utils': ^0.0.13
   '@flemist/copy-glob-flat': 0.0.5
   '@flemist/karma-custom-launcher': 0.0.0
   '@flemist/test-variants': 0.0.16
@@ -52,6 +53,7 @@ specifiers:
   typescript: '=4.7.4'
 
 dependencies:
+  '@flemist/async-utils': 0.0.13
   '@flemist/time-controller': 0.0.1
   tslib: 2.4.0
 
@@ -1339,7 +1341,15 @@ packages:
     resolution: {integrity: sha512-ewpqfmNx+V5dqTzVBxi7syhhsFRk5ktNOd0d85tKyGkqwzoMyJSYGBPmycYhlUDSsIN/3Nb2EaE0tPOtfw6PNQ==}
     dependencies:
       tslib: 2.4.0
-    dev: true
+
+  /@flemist/async-utils/0.0.13:
+    resolution: {integrity: sha512-pxGOle7BpEcA5xQaLotJgANmIlWwlHeUMuNiwnRJOmIdTM+yqZHbl9mBVkXYsRhK+SKO44u5CnH2ypMx5D0BOw==}
+    engines: {node: '>=10.4.0', pnpm: ^7.1.6}
+    dependencies:
+      '@flemist/abort-controller-fast': 0.0.5
+      '@flemist/time-controller': 0.0.1
+      tslib: 2.4.0
+    dev: false
 
   /@flemist/copy-glob-flat/0.0.5:
     resolution: {integrity: sha512-nw2x3zS78uRv7jlR709oXiMXhtTlTS2+WJiy3aTabcayv50CNHMKXevv9WR7YjUJzS7743EdPJl5wAKjIq9Fdg==}

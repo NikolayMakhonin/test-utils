@@ -1,5 +1,5 @@
 import {AsymmetricMatchers, BaseExpect, MatcherContext, Matchers} from 'expect'
-import {CustomMatch} from 'src/node/register/expect/matchers/contracts'
+import {CustomMatch} from './matchers/contracts'
 
 type AsymmetricMatcher_2 = {
   asymmetricMatch(other: unknown): boolean;

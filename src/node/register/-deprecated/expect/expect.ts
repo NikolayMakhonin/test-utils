@@ -1,5 +1,5 @@
 import {expect as _expect} from 'expect'
-import type {ExpectExt} from 'src/node/register/expect/contracts'
+import type {ExpectExt} from './contracts'
 
 const expect = _expect as ExpectExt
 
