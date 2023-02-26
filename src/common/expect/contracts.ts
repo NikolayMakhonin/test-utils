@@ -24,20 +24,31 @@ export interface MatchResult2 {
 
 export type MatchResult3 = boolean | string | MatchResult2
 
+export type Match<Async extends boolean, T> = Async extends true
+  ? MatchAsync<T>
+  : MatchSync<T>
 export type MatchSync<T> = (value: T) => MatchResult3
 export type MatchAsync<T> = (value: T) => PromiseLikeOrValue<MatchResult3>
 
-export class Matcher<T, TMatch extends MatchAsync<T>> {
-  readonly match: TMatch
+export class Matcher<
+  T,
+  Async extends boolean = false,
+> {
+  readonly async: boolean
+  readonly match: Match<Async, T>
   readonly toString: () => string
-  constructor(match: TMatch, toString: () => string) {
+  constructor(
+    async: Async,
+    match: Match<Async, T>,
+    toString: () => string,
+  ) {
     this.match = match
     this.toString = toString
   }
 }
 
-export type MatcherSync<T> = Matcher<T, MatchSync<T>>
-export type MatcherAsync<T> = Matcher<T, MatchAsync<T>>
+export type MatcherSync<T> = Matcher<T>
+export type MatcherAsync<T> = Matcher<T, true>
 
 export type Expected<T> = T | MatcherSync<T> | MatcherAsync<T>
 export type ExpectedSync<T> = T | MatcherSync<T>
@@ -45,6 +56,7 @@ export type ExpectedAsync<T> = T | MatcherAsync<T>
 
 export function isArrayContainingNItems<T>(item: T, count: number): MatcherSync<T[]> {
   return new Matcher(
+    false,
     (actual: T[]) => {
       if (!Array.isArray(actual)) {
         return 'is not an array'
