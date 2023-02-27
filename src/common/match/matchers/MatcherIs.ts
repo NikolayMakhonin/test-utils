@@ -1,11 +1,13 @@
 import {Matcher} from '../Matcher'
 
 export class MatcherIs extends Matcher {
-  readonly _expected: any
+  private readonly _expected: any
+  private readonly _nonStrict: boolean
 
-  constructor(expected: any) {
+  constructor(expected: any, nonStrict?: boolean) {
     super()
     this._expected = expected
+    this._nonStrict = nonStrict || false
   }
 
   get async() {
@@ -13,10 +15,13 @@ export class MatcherIs extends Matcher {
   }
 
   match(actual: any) {
-    return actual === this._expected
+    return this._nonStrict
+      // eslint-disable-next-line eqeqeq
+      ? actual == this._expected
+      : actual === this._expected
   }
 
   toString() {
-    return `is(${this._expected})`
+    return `is.${this._nonStrict ? 'nonStrict' : 'strict'}(${JSON.stringify(this._expected, null, 2)})`
   }
 }
