@@ -1,93 +1,28 @@
-import {Expected, ExpectedAsync, ExpectedSync, MatchResult} from './contracts'
-import {matchAsync, matchSync} from './match'
+import {MatchResult, PromiseLikeOrValue} from './contracts'
 import {isPromiseLike} from '@flemist/async-utils'
 
-export type CheckResult<T, Async extends boolean> = Async extends false
-  ? CheckResultSync<T>
-  : CheckResultAsync<T>
-export type CheckResultSync<T> = (expected: ExpectedSync<T>) => CheckResultSync<T>
-export type CheckResultAsync<T> = (expected: ExpectedAsync<T>) => CheckResultAsync<T> & PromiseLike<void>
+function throwError<T>(matchResult: MatchResult<T>): never {
+  throw new Error('check failed') // TODO: implement error message builder
+}
 
-export class Checker<T, Async extends boolean> implements PromiseLike<void> {
-  protected readonly actual: T
-
-  constructor(
-    async: Async,
-    actual: T,
-  ) {
-    this.actual = actual
-    this._async = async || false as any
-  }
-
-  private readonly _async: Async
-  get async() {
-    return this._async
-  }
-
-  protected throwError(result: MatchResult<any>) {
-    throw new Error('check failed') // TODO: implement error message builder
-  }
-
-  protected checkSync(expected: ExpectedSync<T>): void {
-    const result = matchSync(this.actual, expected)
-    if (result.result === false) {
-      this.throwError(result)
-    }
-  }
-
-  protected async checkAsync(expected: ExpectedAsync<T>): Promise<void> {
-    const result = await matchAsync(this.actual, expected)
-    if (result.result === false) {
-      this.throwError(result)
-    }
-  }
-
-  private readonly _promises: PromiseLike<any>[] = []
-  check(expected: Expected<T, Async>) {
-    if (this.async) {
-      const result = this.checkAsync(expected as any) as any
-      if (isPromiseLike(result)) {
-        this._promises.push(result)
-      }
-      return this
-    }
-    this.checkSync(expected as any)
-    return this
-  }
-
-  then(resolve, reject) {
-    return Promise.all(this._promises)
-      .then(() => resolve(), () => reject())
+export function checkSync<T>(matchResult: MatchResult<T>): void {
+  if (matchResult.result === false) {
+    throwError(matchResult)
   }
 }
 
-export function checkSync<T>(actual: T): CheckResultSync<T> {
-  const checker = new Checker(false, actual)
-
-  function check(expected: ExpectedSync<T>) {
-    void checker.check(expected)
-    return check
+export async function checkAsync<T>(matchResultAsync: PromiseLikeOrValue<MatchResult<T>>) {
+  const matchResult = await matchResultAsync
+  if (matchResult.result === false) {
+    throwError(matchResult)
   }
-
-  return check
 }
 
-export function checkAsync<T>(actual: T): CheckResultAsync<T> {
-  const checker = new Checker(true, actual)
-
-  function check(expected: ExpectedAsync<T>) {
-    void checker.check(expected)
-    return check
+export function check<T>(matchResult: MatchResult<T>): void
+export function check<T>(matchResult: PromiseLike<MatchResult<T>>): PromiseLikeOrValue<void>
+export function check<T>(matchResult: PromiseLikeOrValue<MatchResult<T>>) {
+  if (isPromiseLike(matchResult)) {
+    return checkAsync(matchResult)
   }
-
-  check.then = function then(resolve, reject) {
-    return checker.then(resolve, reject)
-  }
-
-  return check as any
+  checkSync(matchResult)
 }
-
-export const check: typeof checkSync & {
-  async: typeof checkAsync
-} = checkSync as any
-check.async = checkAsync

@@ -154,3 +154,11 @@ export function matchAsync<T>(actual: T, expected: Expected<T>): PromiseLikeOrVa
     return createMatchResultError(actual, expected, error)
   }
 }
+
+export function match<T>(actual: T, expected: Expected<T, false>): MatchResult<T>
+export function match<T>(actual: T, expected: Expected<T, true>): PromiseLikeOrValue<MatchResult<T>>
+export function match<T>(actual: T, expected: Expected<T>): PromiseLikeOrValue<MatchResult<T>> {
+  return expected instanceof Matcher && expected.async !== false
+    ? matchAsync(actual, expected)
+    : matchSync(actual, expected)
+}

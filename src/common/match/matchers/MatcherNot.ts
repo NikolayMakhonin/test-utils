@@ -13,8 +13,8 @@ export class MatcherNot<
     this._expected = expected
   }
 
-  async matchAsync(actual: any): Promise<MatchResult3> {
-    const nested = await matchAsync(actual, this._expected)
+  async matchAsync(actual: T): Promise<MatchResult3> {
+    const nested = await matchAsync<T>(actual, this._expected as Expected<T, true>)
     return {
       result: !nested.result,
       nested: [{
@@ -24,8 +24,8 @@ export class MatcherNot<
     }
   }
 
-  matchSync(actual: any) {
-    const nested = matchSync(actual, this._expected)
+  matchSync(actual: T): MatchResult3 {
+    const nested = matchSync(actual, this._expected as Expected<T, false>)
     return {
       result: !nested.result,
       nested: [{
