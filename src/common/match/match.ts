@@ -2,7 +2,7 @@ import {
   MatchResult3,
   MatchResult,
   Expected, ExpectedSync, PromiseLikeOrValue,
-} from 'src/common/expect/contracts'
+} from './contracts'
 import {isPromiseLike} from '@flemist/async-utils'
 import {Matcher} from './Matcher'
 
