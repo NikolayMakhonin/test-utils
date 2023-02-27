@@ -108,7 +108,7 @@ export function matchSync<T>(actual: T, expected: ExpectedSync<T>): MatchResult<
   try {
     if (expected instanceof Matcher) {
       if (expected.async) {
-        const error = new Error('expected matcher is async but should be sync')
+        const error = new MatchInternalError('expected matcher is async but should be sync')
         return createMatchResultError(actual, expected, error)
       }
       const result = expected.match(actual)
@@ -141,7 +141,7 @@ export function matchAsync<T>(actual: T, expected: Expected<T>): PromiseLikeOrVa
       const result = expected.match(actual)
       if (isPromiseLike(result)) {
         if (!expected.async) {
-          const error = new Error('expected matcher is not async but returned a promise')
+          const error = new MatchInternalError('expected matcher is not async but returned a promise')
           return createMatchResultError(actual, expected, error)
         }
         return createMatchResultAsync(actual, expected, result)
