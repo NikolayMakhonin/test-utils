@@ -3,10 +3,25 @@ import {createTestVariants} from '@flemist/test-variants'
 import {isPromiseLike} from '@flemist/async-utils'
 import {MatchResult} from './contracts'
 import {Matcher} from './Matcher'
+import {MatchInternalError} from 'src/common/match/MatchInternalError'
 
 describe('match > match', function () {
   const testError = new Error('Test error')
   const testNested = []
+
+  function isInvalidResult({
+    result,
+    cause,
+    nested,
+  }: {
+    result: any
+    cause: any
+    nested: any
+  }) {
+    return typeof result !== 'boolean'
+      || typeof cause !== 'string' && cause != null
+      || nested != null && !(nested instanceof Array)
+  }
 
   const testVariants = createTestVariants(async ({
     async,
@@ -51,13 +66,27 @@ describe('match > match', function () {
         }
       }
       else {
-        matchResultExpected = {
-          actual,
-          expected,
-          result,
-          cause,
-          nested: nested ? testNested : null,
-          error : null,
+        if (isInvalidResult(matchResult)) {
+          assert.ok(matchResult.error instanceof MatchInternalError,
+            `matchResult.error must be an instance of MatchInternalError, but it is: ${matchResult.error}`)
+          matchResultExpected = {
+            actual,
+            expected,
+            result: null,
+            cause : null,
+            nested: null,
+            error : matchResult.error,
+          }
+        }
+        else {
+          matchResultExpected = {
+            actual,
+            expected,
+            result,
+            cause,
+            nested: nested ? testNested : null,
+            error : null,
+          }
         }
       }
 
@@ -129,9 +158,9 @@ describe('match > match', function () {
         return _match === 'matchAsync' ? [matchAsync] : [matchSync]
       },
       error      : [false, true],
-      nested     : [null, testNested], // , void 0, false, {}],
-      cause      : [null, 'Test cause'], // , void 0, false, {}],
-      result     : [false, true], // , null, void 0, '', {}],
+      nested     : [null, testNested, void 0, false, {}],
+      cause      : [null, 'Test cause', void 0, false, {}],
+      result     : [false, true, null, void 0, '', {}],
       actualValue: [null, void 0, 0, false, '', {}],
       actual({async, match, actualValue}) {
         return async
@@ -148,6 +177,11 @@ describe('match > match', function () {
           cause,
           result,
         })
+
+        if (isInvalidResult({result, cause, nested})) {
+          return [matcher]
+        }
+
         return !async && cause === null && nested === null && error === false
           ? [result ? actualValue : {}, matcher]
           : [matcher]
