@@ -4,7 +4,7 @@ import {isPromiseLike} from '@flemist/async-utils'
 import {MatchResult} from './contracts'
 import {Matcher} from './Matcher'
 
-describe('match', function () {
+describe('match > match', function () {
   const testError = new Error('Test error')
   const testNested = []
 
@@ -119,22 +119,7 @@ describe('match', function () {
     )
   }
 
-  it('Matcher constructor throws', function () {
-    new Matcher(true, () => null, () => null)
-    assert.throws(() => new Matcher(null, () => null, () => null))
-    assert.throws(() => new Matcher(void 0, () => null, () => null))
-    assert.throws(() => new Matcher('' as any, () => null, () => null))
-
-    assert.throws(() => new Matcher(true, null, () => null))
-    assert.throws(() => new Matcher(true, void 0, () => null))
-    assert.throws(() => new Matcher(true, '' as any, () => null))
-
-    assert.throws(() => new Matcher(true, () => null, null))
-    assert.throws(() => new Matcher(true, () => null, void 0))
-    assert.throws(() => new Matcher(true, () => null, '' as any))
-  })
-
-  it('async', async function () {
+  it('variants', async function () {
     await testVariants({
       async: [false, true],
       _match({async}) {

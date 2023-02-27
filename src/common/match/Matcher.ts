@@ -1,4 +1,5 @@
 import type {Match} from './contracts'
+import {MatchInternalError} from './MatchInternalError'
 
 export class Matcher<T,
   Async extends boolean = false,
@@ -13,13 +14,13 @@ export class Matcher<T,
     toString: () => string,
   ) {
     if (typeof async !== 'boolean') {
-      throw new Error(`async must be boolean, but it is ${typeof async}`)
+      throw new MatchInternalError(`async must be boolean, but it is ${typeof async}`)
     }
     if (typeof match !== 'function') {
-      throw new Error(`match must be function, but it is ${typeof match}`)
+      throw new MatchInternalError(`match must be function, but it is ${typeof match}`)
     }
     if (typeof toString !== 'function') {
-      throw new Error(`toString must be function, but it is ${typeof toString}`)
+      throw new MatchInternalError(`toString must be function, but it is ${typeof toString}`)
     }
 
     this.async = async
