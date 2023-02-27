@@ -1,10 +1,10 @@
 import {MatcherIs} from './MatcherIs'
 import {testMatcher} from './test/testMatcher'
-import {MatcherNot} from './MatcherNot'
+import {MatcherArray} from './MatcherArray'
 
 const actuals = [void 0, null, 0, false, '', 1, true, '1', {}, []]
 
-describe('match > matchers > MatcherNot', function () {
+describe('match > matchers > MatcherArray', function () {
   it('false', async function () {
     await testMatcher({
       async    : [false],
@@ -14,7 +14,7 @@ describe('match > matchers > MatcherNot', function () {
         // eslint-disable-next-line eqeqeq
         .filter(o => nonStrict ? o == actual : o === actual),
       matcherNested: ({expected, nonStrict}) => [new MatcherIs(expected, nonStrict)],
-      matcher      : ({async, matcherNested}) => [new MatcherNot(async, matcherNested)],
+      matcher      : ({async, matcherNested}) => [new MatcherArray(async, [matcherNested])],
       result       : [false],
       cause        : [null],
       nested       : ({actual, matcherNested, result}) => [[{
@@ -40,7 +40,7 @@ describe('match > matchers > MatcherNot', function () {
         // eslint-disable-next-line eqeqeq
         .filter(o => nonStrict ? o != actual : o !== actual),
       matcherNested: ({expected, nonStrict}) => [new MatcherIs(expected, nonStrict)],
-      matcher      : ({async, matcherNested}) => [new MatcherNot(async, matcherNested)],
+      matcher      : ({async, matcherNested}) => [new MatcherArray(async, [matcherNested])],
       result       : [true],
       cause        : [null],
       nested       : ({actual, matcherNested, result}) => [[{
