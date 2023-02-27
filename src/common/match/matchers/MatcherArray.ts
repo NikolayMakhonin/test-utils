@@ -114,6 +114,6 @@ export class MatcherArray<
   }
 
   toString() {
-    return `not(${this._expected})`
+    return `[${this._expected.map(o => o.toString()).join(', ')}]`
   }
 }
