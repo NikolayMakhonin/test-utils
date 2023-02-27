@@ -2,8 +2,8 @@ import {matchAsync, matchSync} from './match'
 import {createTestVariants} from '@flemist/test-variants'
 import {isPromiseLike} from '@flemist/async-utils'
 import {MatchResult} from './contracts'
+import {MatchInternalError} from './MatchInternalError'
 import {Matcher} from './Matcher'
-import {MatchInternalError} from 'src/common/match/MatchInternalError'
 
 describe('match > match', function () {
   const testError = new Error('Test error')
@@ -106,46 +106,68 @@ describe('match > match', function () {
     }
   })
 
-  function createTestMatcher({
-    async,
-    result,
-    cause,
-    error,
-    nested,
-  }: {
-    async: boolean
-    result: any
-    cause: any
-    error: boolean | 'async'
-    nested: any
-  }) {
-    return new Matcher(
+  class TestMatcher extends Matcher<any, boolean> {
+    readonly _async: boolean
+    readonly error: boolean | 'async'
+    readonly result: any
+    readonly cause: any
+    readonly nested: any
+
+    constructor({
       async,
-      function (actual: any) {
-        if (error) {
-          if (error === 'async') {
-            return Promise.reject(testError)
-          }
-          throw testError
+      result,
+      cause,
+      error,
+      nested,
+    }: {
+      async: boolean
+      result: any
+      cause: any
+      error: boolean | 'async'
+      nested: any
+    }) {
+      super()
+      this._async = async
+      this.result = result
+      this.cause = cause
+      this.error = error
+      this.nested = nested
+    }
+
+    get async() {
+      return this._async
+    }
+
+    match(actual: any) {
+      if (this.error) {
+        if (this.error === 'async') {
+          return Promise.reject(testError)
         }
-        const _result = {
-          nested: nested ? testNested : null,
-          result,
-          cause,
-          error : 'Incorrect error',
+        throw testError
+      }
+      const _result = {
+        nested: this.nested ? testNested : null,
+        result: this.result,
+        cause : this.cause,
+        error : 'Incorrect error',
+      }
+      if (this.async) {
+        if (isPromiseLike(actual)) {
+          return actual.then(() => _result)
         }
-        if (async) {
-          if (isPromiseLike(actual)) {
-            return actual.then(() => _result)
-          }
-          return Promise.resolve(_result)
-        }
-        return _result
-      },
-      function () {
-        return `TestMatcher(${JSON.stringify({async, error, result, cause})})`
-      },
-    )
+        return Promise.resolve(_result)
+      }
+      return _result
+    }
+
+    toString() {
+      return `TestMatcher(${JSON.stringify({
+        async : this.async,
+        error : this.error,
+        result: this.result,
+        cause : this.cause,
+      })})`
+    }
   }
 
   it('variants', async function () {
@@ -170,7 +192,7 @@ describe('match > match', function () {
       expected({
         async, match, error, nested, cause, result, actualValue,
       }) {
-        const matcher = createTestMatcher({
+        const matcher = new TestMatcher({
           async,
           error,
           nested,

@@ -30,7 +30,7 @@ export type Match<Async extends boolean, T> = Async extends true
 export type MatchSync<T> = (value: T) => MatchResult3
 export type MatchAsync<T> = (value: T) => PromiseLikeOrValue<MatchResult3>
 
-export type MatcherSync<T> = Matcher<T>
+export type MatcherSync<T> = Matcher<T, false>
 export type MatcherAsync<T> = Matcher<T, true>
 
 export type Expected<T> = T | MatcherSync<T> | MatcherAsync<T>
