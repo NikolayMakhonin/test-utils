@@ -91,6 +91,3 @@ export const check: typeof checkSync & {
   async: typeof checkAsync
 } = checkSync as any
 check.async = checkAsync
-
-check(1)(1)
-check.async(1)(1)
