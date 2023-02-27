@@ -24,16 +24,18 @@ export interface MatchResult2 {
 
 export type MatchResult3 = boolean | string | MatchResult2
 
-export type Match<Async extends boolean, T> = Async extends true
-  ? MatchAsync<T>
-  : MatchSync<T>
+export type Match<T, Async extends boolean> = Async extends false
+  ? MatchSync<T>
+  : MatchAsync<T>
 export type MatchSync<T> = (value: T) => MatchResult3
 export type MatchAsync<T> = (value: T) => PromiseLikeOrValue<MatchResult3>
 
 export type MatcherSync<T> = Matcher<T, false>
 export type MatcherAsync<T> = Matcher<T, true>
 
-export type Expected<T> = T | MatcherSync<T> | MatcherAsync<T>
+export type Expected<T, Async extends boolean = boolean> = Async extends false
+  ? ExpectedSync<T>
+  : ExpectedAsync<T>
 export type ExpectedSync<T> = T | MatcherSync<T>
 export type ExpectedAsync<T> = T | MatcherAsync<T>
 

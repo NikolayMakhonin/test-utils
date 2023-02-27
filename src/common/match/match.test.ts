@@ -3,7 +3,7 @@ import {createTestVariants} from '@flemist/test-variants'
 import {isPromiseLike} from '@flemist/async-utils'
 import {MatchResult} from './contracts'
 import {MatchInternalError} from './MatchInternalError'
-import {Matcher} from './Matcher'
+import {MatcherMock} from './matchers/test/MatcherMock'
 
 describe('match > match', function () {
   const testError = new Error('Test error')
@@ -83,7 +83,7 @@ describe('match > match', function () {
             actual,
             expected,
             result,
-            cause,
+            cause : cause ?? null,
             nested: nested ? testNested : null,
             error : null,
           }
@@ -105,70 +105,6 @@ describe('match > match', function () {
       throw err
     }
   })
-
-  class TestMatcher extends Matcher<any, boolean> {
-    readonly _async: boolean
-    readonly error: boolean | 'async'
-    readonly result: any
-    readonly cause: any
-    readonly nested: any
-
-    constructor({
-      async,
-      result,
-      cause,
-      error,
-      nested,
-    }: {
-      async: boolean
-      result: any
-      cause: any
-      error: boolean | 'async'
-      nested: any
-    }) {
-      super()
-      this._async = async
-      this.result = result
-      this.cause = cause
-      this.error = error
-      this.nested = nested
-    }
-
-    get async() {
-      return this._async
-    }
-
-    match(actual: any) {
-      if (this.error) {
-        if (this.error === 'async') {
-          return Promise.reject(testError)
-        }
-        throw testError
-      }
-      const _result = {
-        nested: this.nested ? testNested : null,
-        result: this.result,
-        cause : this.cause,
-        error : 'Incorrect error',
-      }
-      if (this.async) {
-        if (isPromiseLike(actual)) {
-          return actual.then(() => _result)
-        }
-        return Promise.resolve(_result)
-      }
-      return _result
-    }
-
-    toString() {
-      return `TestMatcher(${JSON.stringify({
-        async : this.async,
-        error : this.error,
-        result: this.result,
-        cause : this.cause,
-      })})`
-    }
-  }
 
   it('variants', async function () {
     await testVariants({
@@ -192,9 +128,11 @@ describe('match > match', function () {
       expected({
         async, match, error, nested, cause, result, actualValue,
       }) {
-        const matcher = new TestMatcher({
+        const matcher = new MatcherMock({
           async,
-          error,
+          error: error === 'async' ? Promise.reject(testError)
+            : error ? testError
+              : null,
           nested,
           cause,
           result,

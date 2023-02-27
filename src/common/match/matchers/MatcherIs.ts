@@ -1,10 +1,10 @@
 import {Matcher} from '../Matcher'
 
-export class MatcherIs extends Matcher {
+export class MatcherIs<T = any> extends Matcher<T> {
   private readonly _expected: any
   private readonly _nonStrict: boolean
 
-  constructor(expected: any, nonStrict?: boolean) {
+  constructor(expected: T, nonStrict?: boolean) {
     super()
     this._expected = expected
     this._nonStrict = nonStrict || false

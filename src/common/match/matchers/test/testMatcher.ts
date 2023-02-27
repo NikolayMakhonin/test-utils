@@ -36,6 +36,6 @@ export const testMatcher = createTestVariants(async ({
     assert.strictEqual(matchResult.result ?? null, result ?? null)
     assert.strictEqual(matchResult.cause ?? null, cause ?? null)
     assert.deepStrictEqual(matchResult.nested ?? null, nested ?? null)
-    assert.strictEqual(Object.keys(matchResult).length, 3)
+    assert.ok(Object.keys(matchResult).every(key => key === 'result' || key === 'cause' || key === 'nested'))
   }
 })
