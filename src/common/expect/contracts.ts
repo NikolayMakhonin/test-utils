@@ -42,6 +42,7 @@ export class Matcher<
     match: Match<Async, T>,
     toString: () => string,
   ) {
+    this.async = async
     this.match = match
     this.toString = toString
   }
