@@ -1,4 +1,5 @@
-import {Matcher, MatcherCheck} from 'src/common/expect/contracts'
+import {MatcherCheck} from 'src/common/expect/contracts'
+import {Matcher} from "src/common/expect/Matcher";
 
 export function matcher<T>(
   check: MatcherCheck<T>,

@@ -1,4 +1,4 @@
-import {matchSync} from 'src/common/expect/match'
+import type {Matcher} from './Matcher'
 
 export type PromiseLikeOrValue<T> = T | PromiseLike<T>
 
@@ -29,24 +29,6 @@ export type Match<Async extends boolean, T> = Async extends true
   : MatchSync<T>
 export type MatchSync<T> = (value: T) => MatchResult3
 export type MatchAsync<T> = (value: T) => PromiseLikeOrValue<MatchResult3>
-
-export class Matcher<
-  T,
-  Async extends boolean = false,
-> {
-  readonly async: boolean
-  readonly match: Match<Async, T>
-  readonly toString: () => string
-  constructor(
-    async: Async,
-    match: Match<Async, T>,
-    toString: () => string,
-  ) {
-    this.async = async
-    this.match = match
-    this.toString = toString
-  }
-}
 
 export type MatcherSync<T> = Matcher<T>
 export type MatcherAsync<T> = Matcher<T, true>

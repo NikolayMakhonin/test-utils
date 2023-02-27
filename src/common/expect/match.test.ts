@@ -1,7 +1,8 @@
-import {matchAsync, matchSync} from 'src/common/expect/match'
+import {matchAsync, matchSync} from './match'
 import {createTestVariants} from '@flemist/test-variants'
 import {isPromiseLike} from '@flemist/async-utils'
-import {Matcher, MatchResult} from 'src/common/expect/contracts'
+import {MatchResult} from './contracts'
+import {Matcher} from './Matcher'
 
 describe('match', function () {
   const testError = new Error('Test error')
@@ -117,6 +118,21 @@ describe('match', function () {
       },
     )
   }
+
+  it('Matcher constructor throws', function () {
+    new Matcher(true, () => null, () => null)
+    assert.throws(() => new Matcher(null, () => null, () => null))
+    assert.throws(() => new Matcher(void 0, () => null, () => null))
+    assert.throws(() => new Matcher('' as any, () => null, () => null))
+
+    assert.throws(() => new Matcher(true, null, () => null))
+    assert.throws(() => new Matcher(true, void 0, () => null))
+    assert.throws(() => new Matcher(true, '' as any, () => null))
+
+    assert.throws(() => new Matcher(true, () => null, null))
+    assert.throws(() => new Matcher(true, () => null, void 0))
+    assert.throws(() => new Matcher(true, () => null, '' as any))
+  })
 
   it('async', async function () {
     await testVariants({

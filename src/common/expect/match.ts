@@ -1,10 +1,10 @@
 import {
-  Matcher,
   MatchResult3,
   MatchResult,
   Expected, ExpectedSync, PromiseLikeOrValue,
 } from 'src/common/expect/contracts'
 import {isPromiseLike} from '@flemist/async-utils'
+import {Matcher} from './Matcher'
 
 function createMatchResultError<T>(
   actual: T,
