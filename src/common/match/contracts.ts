@@ -33,11 +33,22 @@ export type MatchAsync<T> = (value: T) => PromiseLikeOrValue<MatchResult3>
 export type MatcherSync<T> = Matcher<T, false>
 export type MatcherAsync<T> = Matcher<T, true>
 
-export type Expected<T, Async extends boolean = boolean> = Async extends false
-  ? ExpectedSync<T>
-  : ExpectedAsync<T>
-export type ExpectedSync<T> = T | MatcherSync<T>
-export type ExpectedAsync<T> = T | MatcherAsync<T>
+export type Expected<T, Async extends boolean = boolean> = T | Matcher<T, Async>
+export type ExpectedSync<T> = Expected<T, false>
+export type ExpectedAsync<T> = Expected<T, true>
+
+export type ToExpectedObject<T extends {}, Async extends boolean = boolean> = {
+  [key in keyof T]: ToExpectedDeep<T[key], Async>
+}
+
+export type ToExpectedArray<T extends any[], Async extends boolean = boolean> =
+  T extends [infer A, ...infer B] ? [ToExpectedDeep<A, Async>, ...ToExpectedArray<B, Async>] : []
+
+export type ToExpectedDeep<T, Async extends boolean = boolean> =
+  T extends any[] ? ToExpectedArray<T, Async>
+  : T extends {} ? ToExpectedObject<T, Async>
+    : Expected<T, Async>
+
 
 // export function isArrayContainingNItems<T>(item: T, count: number): MatcherSync<T[]> {
 //   return new Matcher(

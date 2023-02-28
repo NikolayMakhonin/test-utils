@@ -1,19 +1,19 @@
-import {MatchResult3, MatchResultNested} from '../contracts'
+import {MatchResult3, MatchResultNested, ToExpectedArray} from '../contracts'
 import {matchAsync, matchSync} from '../match'
 import {MatcherSyncOrAsync} from '../MatcherSyncOrAsync'
 
 export class MatcherArray<
-  T = any,
+  T extends any[] = any[],
   Async extends boolean = boolean,
-> extends MatcherSyncOrAsync<T[], Async> {
-  private readonly _expected: T[]
+> extends MatcherSyncOrAsync<T, Async> {
+  private readonly _expected: ToExpectedArray<T, Async>
 
-  constructor(async: Async, expected: T[]) {
+  constructor(async: Async, expected: ToExpectedArray<T, Async>) {
     super(async)
     this._expected = expected
   }
 
-  async matchAsync(actual: T[]): Promise<MatchResult3> {
+  async matchAsync(actual: T): Promise<MatchResult3> {
     if (!Array.isArray(actual)) {
       return {
         result: false,
@@ -66,7 +66,7 @@ export class MatcherArray<
     }
   }
 
-  matchSync(actual: T[]): MatchResult3 {
+  matchSync(actual: T): MatchResult3 {
     if (!Array.isArray(actual)) {
       return {
         result: false,

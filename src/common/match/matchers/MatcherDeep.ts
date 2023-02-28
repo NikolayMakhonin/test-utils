@@ -1,15 +1,26 @@
-import {MatchResult3, MatchResultNested, ToExpectedObject} from '../contracts'
+import {Expected, MatchResult3, MatchResultNested} from '../contracts'
 import {matchAsync, matchSync} from '../match'
 import {MatcherSyncOrAsync} from '../MatcherSyncOrAsync'
+import {Matcher} from '../Matcher'
+import {MatcherObject} from './MatcherObject'
+import {MatcherArray} from './MatcherArray'
 
-export class MatcherObject<
-  T extends object = any,
+export class MatcherDeep<
+  T = any,
   Async extends boolean = boolean,
 > extends MatcherSyncOrAsync<T, Async> {
-  private readonly _expected: ToExpectedObject<T, Async>
+  private readonly _expected: T
 
-  constructor(async: Async, expected: ToExpectedObject<T, Async>) {
+  constructor(async: Async, expected: Expected<T, Async>) {
     super(async)
+    if (expected != null && !(expected instanceof Matcher)) {
+      if (typeof expected === 'object') {
+        expected = new MatcherObject<T, Async>(async, expected)
+      }
+      else if (Array.isArray(expected)) {
+        expected = new MatcherArray(async, expected)
+      }
+    }
     this._expected = expected
   }
 
@@ -122,8 +133,6 @@ export class MatcherObject<
   }
 
   toString() {
-    return `{${Object.keys(this._expected).map((key) => {
-      return `${key}: ${this._expected[key]}`
-    }).join(', ')}}`
+    return `[${this._expected.map(o => o.toString()).join(', ')}]`
   }
 }
