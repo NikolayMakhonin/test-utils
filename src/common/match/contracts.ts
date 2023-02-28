@@ -42,7 +42,7 @@ export type ToExpectedObject<T extends {}, Async extends boolean = boolean> = {
 }
 
 export type ToExpectedArray<T extends any[], Async extends boolean = boolean> =
-  T extends [infer A, ...infer B] ? [ToExpectedDeep<A, Async>, ...ToExpectedArray<B, Async>] : []
+  T extends Array<infer A> ? ToExpectedDeep<A, Async>[] : []
 
 export type ToExpectedDeep<T, Async extends boolean = boolean> =
   T extends any[] ? ToExpectedArray<T, Async>

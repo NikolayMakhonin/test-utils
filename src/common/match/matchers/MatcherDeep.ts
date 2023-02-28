@@ -1,4 +1,4 @@
-import {Expected, MatchResult3, MatchResultNested} from '../contracts'
+import {MatchResult3, MatchResultNested, ToExpectedDeep} from '../contracts'
 import {matchAsync, matchSync} from '../match'
 import {MatcherSyncOrAsync} from '../MatcherSyncOrAsync'
 import {Matcher} from '../Matcher'
@@ -9,16 +9,16 @@ export class MatcherDeep<
   T = any,
   Async extends boolean = boolean,
 > extends MatcherSyncOrAsync<T, Async> {
-  private readonly _expected: T
+  private readonly _expected: ToExpectedDeep<T, Async>
 
-  constructor(async: Async, expected: Expected<T, Async>) {
+  constructor(async: Async, expected: ToExpectedDeep<T, Async>) {
     super(async)
     if (expected != null && !(expected instanceof Matcher)) {
       if (typeof expected === 'object') {
-        expected = new MatcherObject<T, Async>(async, expected)
+        expected = new MatcherObject<any, Async>(async, expected) as any
       }
       else if (Array.isArray(expected)) {
-        expected = new MatcherArray(async, expected)
+        expected = new MatcherArray<any, Async>(async, expected) as any
       }
     }
     this._expected = expected
@@ -133,6 +133,9 @@ export class MatcherDeep<
   }
 
   toString() {
-    return `[${this._expected.map(o => o.toString()).join(', ')}]`
+    if (this._expected instanceof Matcher) {
+      return this._expected.toString()
+    }
+    return JSON.stringify(this._expected, null, 2)
   }
 }
