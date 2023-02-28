@@ -4,7 +4,9 @@ import {MatcherMock} from './test/MatcherMock'
 
 const EMPTY: any = new String('EMPTY')
 
-const actuals = [EMPTY, void 0, null, 0, false, '', 1, true, '1', {}, []]
+const OBJECT = {}
+const ARRAY = []
+const actuals = [EMPTY, void 0, null, 0, false, '', 1, true, '1', OBJECT, ARRAY]
 
 function matcherMock(async: boolean, result: boolean) {
   return new MatcherMock({
@@ -48,18 +50,17 @@ describe('match > matchers > MatcherArray', function () {
       nested : ({actual, expected, matcher, result}) => {
         const nested = []
         for (let index = 0; index < expected.length; index++) {
-          const expectedItem = expected[index]
-          nested[index] = {
+          nested.push({
             key   : index,
             result: {
               actual  : actual[index],
-              expected: expectedItem,
+              expected: expected[index],
               result  : true,
               cause   : null,
               nested  : null,
               error   : null,
             },
-          }
+          })
         }
         return [nested]
       },
@@ -75,8 +76,8 @@ describe('match > matchers > MatcherArray', function () {
     [true, ''],
     ['1', 1],
     [1, '1'],
-    [{}, []],
-    [[], {}],
+    [OBJECT, []],
+    [ARRAY, {}],
   ])
 
   it('false', async function () {
@@ -104,7 +105,7 @@ describe('match > matchers > MatcherArray', function () {
       diffValueIndex: ({actual}) => Array.from({length: actual.length + 1}, (_, index) => index),
       expected({diffValueIndex, actual, expected1, expected2, expected3}) {
         const expected = [expected1, expected2, expected3].filter(o => o !== EMPTY)
-        const expectedItem = actual[Math.min(actual.length - 1, diffValueIndex)]
+        const expectedItem = expected[Math.min(actual.length - 1, diffValueIndex)]
         const diffValue = expectedItem instanceof MatcherMock
           ? matcherMock(expectedItem.async, false)
           : diffValues.get(expectedItem)
@@ -114,10 +115,10 @@ describe('match > matchers > MatcherArray', function () {
       matcher: ({async, expected}) => [new MatcherArray(async, expected)],
       result : [false],
       cause  : ({actual, diffValueIndex, expected, matcher, result}) => {
-        if (actual.length === expected.length) {
-          return [null]
+        if (actual.length !== expected.length) {
+          return [`length is not ${expected.length}`]
         }
-        return [`length is not ${expected.length}`]
+        return [null]
       },
       nested: ({actual, diffValueIndex, expected, matcher, result}) => {
         if (actual.length !== expected.length) {
