@@ -8,7 +8,7 @@ describe('match > matchers > MatcherIs', function () {
     await testMatcher({
       async    : [false],
       nonStrict: [false, true],
-      actual   : [void 0, null, 0, false, '', 1, true, '1', {}, []],
+      actual   : actuals,
       expected : ({actual, nonStrict}) => actuals
         // eslint-disable-next-line eqeqeq
         .filter(o => nonStrict ? o == actual : o === actual),

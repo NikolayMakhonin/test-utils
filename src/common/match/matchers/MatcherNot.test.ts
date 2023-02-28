@@ -7,9 +7,9 @@ const actuals = [void 0, null, 0, false, '', 1, true, '1', {}, []]
 describe('match > matchers > MatcherNot', function () {
   it('false', async function () {
     await testMatcher({
-      async    : [false],
+      async    : [false, true],
       nonStrict: [false, true],
-      actual   : [void 0, null, 0, false, '', 1, true, '1', {}, []],
+      actual   : actuals,
       expected : ({actual, nonStrict}) => actuals
         // eslint-disable-next-line eqeqeq
         .filter(o => nonStrict ? o == actual : o === actual),
@@ -33,9 +33,9 @@ describe('match > matchers > MatcherNot', function () {
 
   it('true', async function () {
     await testMatcher({
+      async    : [false, true],
       nonStrict: [false, true],
       actual   : actuals,
-      async    : [false],
       expected : ({actual, nonStrict}) => actuals
         // eslint-disable-next-line eqeqeq
         .filter(o => nonStrict ? o != actual : o !== actual),
