@@ -37,18 +37,37 @@ export type Expected<T, Async extends boolean = boolean> = T | Matcher<T, Async>
 export type ExpectedSync<T> = Expected<T, false>
 export type ExpectedAsync<T> = Expected<T, true>
 
-export type ToExpectedObject<T extends {}, Async extends boolean = boolean> = {
-  [key in keyof T]: ToExpectedDeep<T[key], Async>
+export type ToExpectedObject<T extends object, Async extends boolean = boolean> = {
+  [key in keyof T]: Expected<T[key], Async>
 }
 
 export type ToExpectedArray<T extends any[], Async extends boolean = boolean> =
-  T extends Array<infer A> ? ToExpectedDeep<A, Async>[] : []
+  T extends [infer A, ...infer B]
+    ? [Expected<A, Async>, ...(B extends never[] ? [] : ToExpectedArray<B, Async>)]
+      : T extends Array<infer C> ? Expected<C, Async>[]
+        : never
+
+type ToExpectedObjectDeep<T extends object, Async extends boolean = boolean> = {
+  [key in keyof T]: ToExpectedDeep<T[key], Async>
+}
+
+type ToExpectedArrayDeep<T extends any[], Async extends boolean = boolean> =
+  T extends [infer A, ...infer B]
+    ? [ToExpectedDeep<A, Async>, ...(B extends never[] ? [] : ToExpectedArrayDeep<B, Async>)]
+      : T extends Array<infer C> ? ToExpectedDeep<C, Async>[]
+        : never
 
 export type ToExpectedDeep<T, Async extends boolean = boolean> =
-  T extends any[] ? ToExpectedArray<T, Async>
-  : T extends {} ? ToExpectedObject<T, Async>
-    : Expected<T, Async>
+  T extends any[] ? ToExpectedArrayDeep<T, Async>
+    : T extends object ? ToExpectedObjectDeep<T, Async>
+      : Expected<T, Async>
 
+// test:
+// type X = ToExpectedArrayDeep<[a: 1, b: '2', c: { a: [true, ''] }], true>
+// type Y = ToExpectedDeep<{ a: [true, ''] }[], false>
+// export const x: X = null
+// export const y: Y = null
+// export const y0 = y[0]
 
 // export function isArrayContainingNItems<T>(item: T, count: number): MatcherSync<T[]> {
 //   return new Matcher(
