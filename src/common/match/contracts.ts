@@ -41,6 +41,24 @@ export type ToExpectedObject<T extends object, Async extends boolean = boolean> 
   [key in keyof T]: Expected<T[key], Async>
 }
 
+export type TIterator<T, Async extends boolean> = Async extends true
+  ? Iterator<T> | AsyncIterator<T>
+  : Iterator<T>
+
+export type TIterable<T, Async extends boolean> = Async extends true
+  ? Iterable<T> | AsyncIterable<T>
+  : Iterable<T>
+
+export type ToExpectedIterator<T extends TIterator<any, Async>, Async extends boolean = boolean> =
+  T extends TIterator<infer C, Async>
+    ? TIterator<Expected<C, Async>, Async>
+    : never
+
+export type ToExpectedIterable<T extends TIterable<any, Async>, Async extends boolean = boolean> =
+  T extends TIterable<infer C, Async>
+    ? TIterable<Expected<C, Async>, Async>
+    : never
+
 export type ToExpectedArray<T extends any[], Async extends boolean = boolean> =
   T extends [infer A, ...infer B]
     ? [Expected<A, Async>, ...(B extends never[] ? [] : ToExpectedArray<B, Async>)]

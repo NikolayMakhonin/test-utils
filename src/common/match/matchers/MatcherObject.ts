@@ -2,15 +2,22 @@ import {MatchResult3, MatchResultNested, ToExpectedObject} from '../contracts'
 import {matchAsync, matchSync} from '../match'
 import {MatcherSyncOrAsync} from '../MatcherSyncOrAsync'
 
+export type MatcherObjectOptions = {
+  containing?: boolean
+  ordered?: boolean
+}
+
 export class MatcherObject<
   T extends object = any,
   Async extends boolean = boolean,
 > extends MatcherSyncOrAsync<T, Async> {
   private readonly _expected: ToExpectedObject<T, Async>
+  private readonly _options: MatcherObjectOptions
 
-  constructor(async: Async, expected: ToExpectedObject<T, Async>) {
+  constructor(async: Async, expected: ToExpectedObject<T, Async>, options?: MatcherObjectOptions) {
     super(async)
     this._expected = expected
+    this._options = options ? {...options} : null
   }
 
   async matchAsync(actual: T): Promise<MatchResult3> {

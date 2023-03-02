@@ -2,26 +2,37 @@ import {MatchResult3, MatchResultNested, ToExpectedDeep} from '../contracts'
 import {matchAsync, matchSync} from '../match'
 import {MatcherSyncOrAsync} from '../MatcherSyncOrAsync'
 import {Matcher} from '../Matcher'
-import {MatcherObject} from './MatcherObject'
-import {MatcherArray} from './MatcherArray'
+import {MatcherObject, MatcherObjectOptions} from './MatcherObject'
+import {MatcherArray, MatcherArrayOptions} from './MatcherArray'
+
+export type MatcherDeepOptions = {
+  object?: MatcherObjectOptions,
+  array?: MatcherArrayOptions,
+}
 
 export class MatcherDeep<
   T = any,
   Async extends boolean = boolean,
 > extends MatcherSyncOrAsync<T, Async> {
   private readonly _expected: ToExpectedDeep<T, Async>
+  private readonly _options: MatcherDeepOptions
 
-  constructor(async: Async, expected: ToExpectedDeep<T, Async>) {
+  constructor(async: Async, expected: ToExpectedDeep<T, Async>, options?: MatcherDeepOptions) {
     super(async)
     if (expected != null && !(expected instanceof Matcher)) {
       if (typeof expected === 'object') {
-        expected = new MatcherObject<any, Async>(async, expected) as any
+        expected = new MatcherObject<any, Async>(async, expected, options?.object) as any
       }
       else if (Array.isArray(expected)) {
-        expected = new MatcherArray<any, Async>(async, expected) as any
+        expected = new MatcherArray<any, Async>(async, expected, options?.array) as any
       }
     }
     this._expected = expected
+    this._options = options ? {
+      ...options,
+      object: options.object ? {...options.object} : null,
+      array : options.array ? {...options.array} : null,
+    } : null
   }
 
   async matchAsync(actual: T): Promise<MatchResult3> {

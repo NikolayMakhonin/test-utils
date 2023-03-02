@@ -76,7 +76,7 @@ function createMatchResultBoolean<T>(
   })
 }
 
-function createMatchResultSync<T>(
+export function createMatchResultSync<T>(
   actual: T,
   expected: Expected<T>,
   result: MatchResult3,
