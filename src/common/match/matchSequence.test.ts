@@ -1,11 +1,10 @@
 import {createTestVariants} from '@flemist/test-variants'
 
 type Options = {
-  canBeStartBefore?: boolean
-  canBeStartAfter?: boolean
-  canBeDoneBefore?: boolean
-  canBeDoneAfter?: boolean
-  actualRepeats?: boolean
+  startsWith?: boolean
+  endsWith?: boolean
+  repeats?: boolean
+  breaks?: boolean
 }
 
 function matchSequence(actual: number[], expected: number[], options: Options): boolean {
@@ -20,11 +19,15 @@ function matchSequence(actual: number[], expected: number[], options: Options): 
       if (lastIncrementActual && !lastIncrementExpected) {
         indexExpected++
         lastIncrementExpected = true
+        lastIncrementActual = false
       }
       else if (!lastIncrementActual && lastIncrementExpected) {
         throw new Error('not implemented')
       }
-      if (indexActual < actual.length && options?.canBeStartBefore) {
+      if (indexExpected >= expected.length && !options?.endsWith) {
+        return true
+      }
+      if (indexActual < actual.length && !options?.startsWith) {
         indexActualStart++
         indexActual = indexActualStart
         indexExpected = indexExpectedStart
@@ -32,7 +35,7 @@ function matchSequence(actual: number[], expected: number[], options: Options): 
         lastIncrementExpected = false
         continue
       }
-      if (indexExpected < expected.length && options?.canBeStartAfter) {
+      if (indexActual >= actual.length && indexExpected < expected.length && options?.repeats) {
         indexExpectedStart++
         indexActual = indexActualStart
         indexExpected = indexExpectedStart
@@ -40,17 +43,17 @@ function matchSequence(actual: number[], expected: number[], options: Options): 
         lastIncrementExpected = false
         continue
       }
-      if (!options?.canBeDoneBefore && indexExpected < expected.length) {
+      if (indexExpected < expected.length) {
         return false
       }
-      if (!options?.canBeDoneAfter && indexActual < actual.length) {
+      if (indexActual < actual.length && options?.endsWith) {
         return false
       }
       return true
     }
 
     if (actual[indexActual] === expected[indexExpected]) {
-      if (options?.actualRepeats) {
+      if (options?.repeats) {
         indexActual++
         lastIncrementActual = true
         lastIncrementExpected = false
@@ -66,24 +69,27 @@ function matchSequence(actual: number[], expected: number[], options: Options): 
       if (lastIncrementActual && !lastIncrementExpected) {
         indexExpected++
         lastIncrementExpected = true
+        lastIncrementActual = false
       }
       else if (!lastIncrementActual && lastIncrementExpected) {
-        throw new Error('not implemented')
+        indexActual++
+        lastIncrementActual = true
+        lastIncrementExpected = false
       }
-      else if (options?.canBeStartBefore) {
+      else if (!options?.startsWith) {
         indexActualStart++
         indexActual = indexActualStart
         indexExpected = indexExpectedStart
         lastIncrementActual = false
         lastIncrementExpected = false
       }
-      else if (options?.canBeStartAfter) {
-        indexExpectedStart++
-        indexActual = indexActualStart
-        indexExpected = indexExpectedStart
-        lastIncrementActual = false
-        lastIncrementExpected = false
-      }
+      // else if (options?.repeats) {
+      //   indexExpectedStart++
+      //   indexActual = indexActualStart
+      //   indexExpected = indexExpectedStart
+      //   lastIncrementActual = false
+      //   lastIncrementExpected = false
+      // }
       else {
         return false
       }
@@ -95,126 +101,56 @@ describe('matchSequence', function () {
   const testVariants = createTestVariants(({
     actual,
     expected,
-    canBeStartBefore,
-    canBeStartAfter,
-    canBeDoneBefore,
-    canBeDoneAfter,
-    actualRepeats,
+    startsWith,
+    endsWith,
+    repeats,
+    breaks,
     result,
   }: {
     actual: number[]
     expected: number[]
-    canBeStartBefore: boolean
-    canBeStartAfter: boolean
-    canBeDoneBefore: boolean
-    canBeDoneAfter: boolean
-    actualRepeats: boolean
+    startsWith?: boolean
+    endsWith?: boolean
+    repeats?: boolean
+    breaks?: boolean
     result: boolean
   }) => {
     const resultActual = matchSequence(actual, expected, {
-      canBeStartBefore,
-      canBeStartAfter,
-      canBeDoneBefore,
-      canBeDoneAfter,
-      actualRepeats,
+      startsWith,
+      endsWith,
+      repeats,
+      breaks,
     })
     assert.strictEqual(resultActual, result)
   })
 
-  it('actualRepeats', async function () {
+  it('equals', async function () {
     await testVariants({
-      result  : [true, false],
-      expected: ({result}) => result
-        ? [[1, 2, 3]]
-        : [
-          [2, 2, 3],
-          [1, 1, 2, 3],
-          [1, 2, 2, 3],
-          [1, 2, 3, 3],
-          [1, 2, 3, 4],
-          [1, 2],
+      result    : [true, false],
+      startsWith: [true, false],
+      endsWith  : [true, false],
+      repeats   : [false, true],
+      breaks    : [false],
+      expected  : [[], [1], [1, 1], [1, 2, 3]],
+      actual    : ({result, expected, startsWith, endsWith}) => [
+        ...result ? [[...expected]] : [],
+        ...expected.length === 0 ? [
+          ...(!startsWith || !endsWith) === result ? [[1]] : [],
+        ]: [
+          ...!result ? [[]] : [],
+          ...!result ? [[...expected.slice(0, expected.length - 1)]] : [],
+          ...!result ? [[...expected.slice(1)]] : [],
+          ...!startsWith === result ? [[0, ...expected]] : [],
+          ...!endsWith === result ? [[...expected, 0]] : [],
+          ...(!startsWith || !endsWith) === result ? [
+            [...expected, ...expected],
+            [...expected, 0, ...expected],
+          ] : [],
+          ...(!startsWith && !endsWith) === result ? [
+            [0, ...expected, 0],
+            [0, ...expected, 0, ...expected, 0],
+          ] : [],
         ],
-      actual: [
-        [1, 2, 3],
-        [1, 1, 2, 3],
-        [1, 2, 2, 3],
-        [1, 2, 3, 3],
-        [1, 1, 1, 2, 2, 2, 3, 3, 3],
-      ],
-      canBeStartBefore: [false],
-      canBeStartAfter : [false],
-      canBeDoneBefore : [false],
-      canBeDoneAfter  : [false],
-      actualRepeats   : [true],
-    })()
-  })
-
-  it('canBeStartBefore', async function () {
-    await testVariants<{
-      values: number[]
-    }>({
-      result          : [true, false],
-      canBeStartBefore: [true],
-      canBeStartAfter : [false],
-      canBeDoneBefore : [false],
-      canBeDoneAfter  : [false],
-      actualRepeats   : [false],
-      values          : ({result}) => result
-        ? [
-          [],
-          [1],
-          [1, 1],
-          [1, 2, 3],
-        ]
-        : [[1, 2, 3]],
-      expected: ({result, values}) => result
-        ? [[], [...values]]
-        : !values.length ? [[1]] : [
-          [values[0], ...values],
-          [...values.slice(0, values.length - 1)],
-          [...values, 4],
-        ],
-      actual: ({values}) => [
-        [...values],
-        [0, ...values],
-        [0, 0, ...values],
-        [...values, ...values],
-        [...values.slice(0, values.length - 1), ...values, ...values],
-      ],
-    })()
-  })
-
-  it('canBeStartAfter', async function () {
-    await testVariants<{
-      values: number[]
-    }>({
-      result          : [true, false],
-      canBeStartBefore: [false],
-      canBeStartAfter : [true],
-      canBeDoneBefore : [false],
-      canBeDoneAfter  : [false],
-      actualRepeats   : [false],
-      values          : ({result}) => result
-        ? [
-          [],
-          [1],
-          [1, 1],
-          [1, 2, 3],
-        ]
-        : [[1, 2, 3]],
-      actual: ({result, values}) => result
-        ? [[], [...values]]
-        : !values.length ? [[1]] : [
-          [values[0], ...values],
-          [...values.slice(0, values.length - 1)],
-          [...values, 4],
-        ],
-      expected: ({values}) => [
-        [...values],
-        [0, ...values],
-        [0, 0, ...values],
-        [...values, ...values],
-        [...values.slice(0, values.length - 1), ...values, ...values],
       ],
     })()
   })
