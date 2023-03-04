@@ -32,6 +32,14 @@ function matchSequence(actual: number[], expected: number[], options: Options): 
         lastIncrementExpected = false
         continue
       }
+      if (indexExpected < expected.length && options?.canBeStartAfter) {
+        indexExpectedStart++
+        indexActual = indexActualStart
+        indexExpected = indexExpectedStart
+        lastIncrementActual = false
+        lastIncrementExpected = false
+        continue
+      }
       if (!options?.canBeDoneBefore && indexExpected < expected.length) {
         return false
       }
@@ -64,6 +72,13 @@ function matchSequence(actual: number[], expected: number[], options: Options): 
       }
       else if (options?.canBeStartBefore) {
         indexActualStart++
+        indexActual = indexActualStart
+        indexExpected = indexExpectedStart
+        lastIncrementActual = false
+        lastIncrementExpected = false
+      }
+      else if (options?.canBeStartAfter) {
+        indexExpectedStart++
         indexActual = indexActualStart
         indexExpected = indexExpectedStart
         lastIncrementActual = false
@@ -169,7 +184,7 @@ describe('matchSequence', function () {
     })()
   })
 
-  xit('canBeStartAfter', async function () {
+  it('canBeStartAfter', async function () {
     await testVariants<{
       values: number[]
     }>({
@@ -187,14 +202,14 @@ describe('matchSequence', function () {
           [1, 2, 3],
         ]
         : [[1, 2, 3]],
-      expected: ({result, values}) => result
+      actual: ({result, values}) => result
         ? [[], [...values]]
         : !values.length ? [[1]] : [
           [values[0], ...values],
           [...values.slice(0, values.length - 1)],
           [...values, 4],
         ],
-      actual: ({values}) => [
+      expected: ({values}) => [
         [...values],
         [0, ...values],
         [0, 0, ...values],
