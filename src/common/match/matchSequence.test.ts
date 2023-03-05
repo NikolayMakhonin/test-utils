@@ -28,6 +28,13 @@ function matchSequence(actual: number[], expected: number[], options: Options): 
       // else if (!lastIncrementActual && lastIncrementExpected) {
       //   throw new Error('not implemented')
       // }
+      if (indexActual < actual.length && options?.endsWith && options?.breaks) {
+        indexActual = actual.length - 1
+        indexExpected = expected.length - 1
+        lastIncrementActual = true
+        lastIncrementExpected = true
+        continue
+      }
       if (indexActual < actual.length && !options?.startsWith) {
         indexActualStart++
         indexActual = indexActualStart
@@ -54,7 +61,7 @@ function matchSequence(actual: number[], expected: number[], options: Options): 
     }
 
     if (actual[indexActual] === expected[indexExpected]) {
-      if (options?.repeats) {
+      if (options?.repeats && !options?.breaks) {
         indexActual++
         lastIncrementActual = true
         lastIncrementExpected = false
@@ -67,6 +74,12 @@ function matchSequence(actual: number[], expected: number[], options: Options): 
       }
     }
     else {
+      if (options?.breaks && indexActual > 0 && indexActual < actual.length - 1) {
+        indexActual++
+        lastIncrementActual = true
+        lastIncrementExpected = true
+        continue
+      }
       if (lastIncrementActual && !lastIncrementExpected) {
         indexExpected++
         lastIncrementExpected = true
@@ -126,29 +139,46 @@ describe('matchSequence', function () {
   })
 
   it('equals', async function () {
-    await testVariants({
+    await testVariants<{
+      actualValues: number[]
+    }>({
       result    : [true, false],
       startsWith: [true, false],
       endsWith  : [true, false],
       repeats   : [false, true],
-      breaks    : [false],
+      breaks    : [false, true],
       expected  : ({repeats}) => [
         [],
         [1],
-        ...!repeats ? [[1, 1]] : [],
+        ...!repeats ? [[1, 1], [1, 1, 2, 2]] : [],
         [1, 2, 3],
       ],
-      actual: ({result, expected, startsWith, endsWith, repeats}) => [
+      actualValues: ({result, expected, breaks, startsWith, endsWith}) => [
+        expected,
+        ...expected.length > 1 && breaks ? [
+          expected.flatMap((o, i) => i === 0 ? [o] : [0, 0, o]),
+          expected.flatMap((o, i) => i === 0 ? [o] : [o, o]),
+          expected.flatMap((o, i) => i === 0 ? [o] : [o, 0, o]),
+          [...expected, ...expected.slice().reverse(), expected[expected.length - 1]],
+          ...!startsWith === result ? [[...expected.slice().reverse(), ...expected]] : [],
+          ...!endsWith === result ? [[...expected, ...expected.slice().reverse()]] : [],
+        ] : [],
+      ],
+      actual: ({
+        result, actualValues: expected, startsWith, endsWith, repeats, breaks,
+      }) => [
         ...result ? [[...expected]] : [],
         ...expected.length === 0 ? [
           ...(!startsWith || !endsWith) === result ? [[1]] : [],
         ]: [
           ...!result ? [[]] : [],
-          ...!result ? [[...expected.slice(0, expected.length - 1)]] : [],
-          ...!result ? [[...expected.slice(1)]] : [],
+          ...!breaks ? [
+            ...!result ? [[...expected.slice(0, expected.length - 1)]] : [],
+            ...!result ? [[...expected.slice(1)]] : [],
+          ] : [],
           ...!startsWith === result ? [[0, ...expected]] : [],
           ...!endsWith === result ? [[...expected, 0]] : [],
-          ...(!startsWith || !endsWith) === result ? [
+          ...(!startsWith || !endsWith || breaks) === result ? [
             ...!repeats ? [[...expected, ...expected]] : [],
             [...expected, 0, ...expected],
           ] : [],
