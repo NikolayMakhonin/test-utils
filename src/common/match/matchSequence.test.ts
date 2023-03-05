@@ -222,15 +222,15 @@ describe('matchSequence', function () {
       result         : [true, false],
       startsWith     : [true, false],
       endsWith       : [true, false],
-      repeats        : [false],
-      breaks         : [false],
+      repeats        : [false, true],
+      breaks         : [false, true],
       resultFalseType: ({result, startsWith, endsWith, repeats, breaks}) => result
         ? ['']
         : [
           'expected',
           ...startsWith ? ['startsWith'] : [],
           ...endsWith ? ['endsWith'] : [],
-          ...!repeats ? ['repeats'] : [],
+          ...!repeats && !breaks ? ['repeats'] : [],
           ...!breaks ? ['breaks'] : [],
         ],
       expected      : [[], [1], [1, 2], [1, 2, 1], [1, 2, 1, 2], [1, 2, 3]],
