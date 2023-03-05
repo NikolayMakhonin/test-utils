@@ -121,6 +121,8 @@ describe('matchSequence', function () {
         [1],
         ...!repeats === result ? [[1, 1], [1, 1, 2, 2], [1, 1, 2, 3]] : [],
         [1, 2, 3],
+        [1, 2, 1],
+        [1, 2, 1, 2],
       ],
       actualValues: ({result, expected, breaks, startsWith, endsWith}) => [
         expected,
