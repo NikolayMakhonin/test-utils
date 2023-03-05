@@ -43,14 +43,6 @@ function matchSequence(actual: number[], expected: number[], options: Options): 
         lastIncrementExpected = false
         continue
       }
-      // if (indexActual >= actual.length && indexExpected < expected.length && options?.repeats) {
-      //   indexExpectedStart++
-      //   indexActual = indexActualStart
-      //   indexExpected = indexExpectedStart
-      //   lastIncrementActual = false
-      //   lastIncrementExpected = false
-      //   continue
-      // }
       if (indexExpected < expected.length) {
         return false
       }
@@ -83,12 +75,10 @@ function matchSequence(actual: number[], expected: number[], options: Options): 
       if (lastIncrementActual && !lastIncrementExpected) {
         indexExpected++
         lastIncrementExpected = true
-        // lastIncrementActual = false
       }
       else if (!lastIncrementActual && lastIncrementExpected) {
         indexActual++
         lastIncrementActual = true
-        // lastIncrementExpected = false
       }
       else if (!options?.startsWith) {
         indexActualStart++
@@ -138,7 +128,7 @@ describe('matchSequence', function () {
     assert.strictEqual(resultActual, result)
   })
 
-  it('equals', async function () {
+  it('variants', async function () {
     await testVariants<{
       actualValues: number[]
     }>({
@@ -189,5 +179,34 @@ describe('matchSequence', function () {
         ],
       ],
     })()
+  })
+
+  it('simple', async function () {
+    assert.strictEqual(true, matchSequence([1, 2, 3], [1, 2, 3], {startsWith: true, endsWith: true, repeats: false, breaks: false}))
+    assert.strictEqual(false, matchSequence([1, 1, 2, 3], [1, 2, 3], {startsWith: true, endsWith: true, repeats: false, breaks: false}))
+    assert.strictEqual(false, matchSequence([1, 2, 3], [1, 1, 2, 3], {startsWith: true, endsWith: true, repeats: false, breaks: false}))
+    assert.strictEqual(false, matchSequence([1, 2, 3, 3], [1, 2, 3], {startsWith: true, endsWith: true, repeats: false, breaks: false}))
+    assert.strictEqual(false, matchSequence([1, 2, 3], [1, 2, 3, 3], {startsWith: true, endsWith: true, repeats: false, breaks: false}))
+
+    assert.strictEqual(true, matchSequence([1, 2, 3], [1, 2, 3], {startsWith: true, endsWith: true, repeats: true, breaks: false}))
+    assert.strictEqual(true, matchSequence([1, 1, 2, 3], [1, 2, 3], {startsWith: true, endsWith: true, repeats: true, breaks: false}))
+    assert.strictEqual(false, matchSequence([1, 2, 3], [1, 1, 2, 3], {startsWith: true, endsWith: true, repeats: true, breaks: false}))
+    assert.strictEqual(true, matchSequence([1, 2, 3, 3], [1, 2, 3], {startsWith: true, endsWith: true, repeats: true, breaks: false}))
+    assert.strictEqual(false, matchSequence([1, 2, 3], [1, 2, 3, 3], {startsWith: true, endsWith: true, repeats: true, breaks: false}))
+    assert.strictEqual(false, matchSequence([1, 2, 1, 3], [1, 2, 3], {startsWith: true, endsWith: true, repeats: true, breaks: false}))
+
+    assert.strictEqual(true, matchSequence([1, 2, 3], [1, 2, 3], {startsWith: true, endsWith: true, repeats: false, breaks: true}))
+    assert.strictEqual(true, matchSequence([1, 1, 2, 3], [1, 2, 3], {startsWith: true, endsWith: true, repeats: false, breaks: true}))
+    assert.strictEqual(false, matchSequence([1, 2, 3], [1, 1, 2, 3], {startsWith: true, endsWith: true, repeats: false, breaks: true}))
+    assert.strictEqual(true, matchSequence([1, 0, 2, 0, 0, 3], [1, 2, 3], {startsWith: true, endsWith: true, repeats: false, breaks: true}))
+    assert.strictEqual(true, matchSequence([1, 0, 2, 3, 2, 1, 3], [1, 2, 3], {startsWith: true, endsWith: true, repeats: false, breaks: true}))
+    assert.strictEqual(false, matchSequence([1, 0, 2, 3, 2, 1, 3, 2], [1, 2, 3], {startsWith: true, endsWith: true, repeats: false, breaks: true}))
+
+    assert.strictEqual(true, matchSequence([0, 1, 1, 2, 2, 3, 3, 0], [1, 2, 3], {startsWith: false, endsWith: false, repeats: true, breaks: false}))
+    assert.strictEqual(false, matchSequence([0, 1, 1, 2, 2, 1, 3, 3, 0], [1, 2, 3], {startsWith: false, endsWith: false, repeats: true, breaks: false}))
+    assert.strictEqual(true, matchSequence([0, 1, 1, 2, 2, 3, 3, 0], [1, 2, 3], {startsWith: false, endsWith: false, repeats: false, breaks: true}))
+    assert.strictEqual(true, matchSequence([0, 1, 1, 2, 2, 1, 3, 3, 0], [1, 2, 3], {startsWith: false, endsWith: false, repeats: false, breaks: true}))
+    assert.strictEqual(true, matchSequence([0, 1, 1, 2, 2, 3, 3, 0], [1, 2, 3], {startsWith: false, endsWith: false, repeats: true, breaks: true}))
+    assert.strictEqual(true, matchSequence([0, 1, 1, 2, 2, 1, 3, 3, 0], [1, 2, 3], {startsWith: false, endsWith: false, repeats: true, breaks: true}))
   })
 })
