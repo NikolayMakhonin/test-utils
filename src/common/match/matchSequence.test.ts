@@ -66,7 +66,7 @@ function matchSequence(actual: number[], expected: number[], options: Options): 
       }
       if (lastIncrementActual && !lastIncrementExpected) {
         indexExpected++
-        lastIncrementExpected = true // TODO test variants
+        lastIncrementExpected = true
       }
       else if (!options?.startsWith) {
         indexActualStart++
@@ -78,6 +78,22 @@ function matchSequence(actual: number[], expected: number[], options: Options): 
       }
     }
   }
+}
+
+function addRepeats(arr: number[], index: number, count: number) {
+  const result = [...arr]
+  for (let i = 0; i < count; i++) {
+    result.splice(index, 0, arr[index])
+  }
+  return result
+}
+
+function addBreaks(arr: number[], index: number, count: number) {
+  const result = [...arr]
+  for (let i = 0; i < count; i++) {
+    result.splice(index, 0, 0)
+  }
+  return result
 }
 
 describe('matchSequence', function () {
@@ -189,5 +205,57 @@ describe('matchSequence', function () {
     assert.strictEqual(true, matchSequence([0, 1, 1, 2, 2, 1, 3, 3, 0], [1, 2, 3], {startsWith: false, endsWith: false, repeats: false, breaks: true}))
     assert.strictEqual(true, matchSequence([0, 1, 1, 2, 2, 3, 3, 0], [1, 2, 3], {startsWith: false, endsWith: false, repeats: true, breaks: true}))
     assert.strictEqual(true, matchSequence([0, 1, 1, 2, 2, 1, 3, 3, 0], [1, 2, 3], {startsWith: false, endsWith: false, repeats: true, breaks: true}))
+
+    assert.strictEqual(false, matchSequence([0, 1, 2, 3], [1, 2, 3], {startsWith: true, endsWith: true, repeats: false, breaks: true}))
+  })
+
+  it('variants 2', async function () {
+    await testVariants<{
+      repeatsValues: number[]
+      breaksValues: number[]
+      startsWithValues: number[]
+      endsWithValues: number[]
+      log: boolean
+    }>({
+      result       : [true, false],
+      startsWith   : [true, false],
+      endsWith     : [true],
+      repeats      : [false],
+      breaks       : [false],
+      expected     : [[], [1], [1, 2], [1, 2, 1], [1, 2, 1, 2], [1, 2, 3]],
+      repeatsValues: ({result, expected, repeats}) => [
+        ...result ? [[...expected]] : [],
+        ...repeats === result && expected.length > 0
+          ? expected.map((_, i) => addRepeats(expected, i, 1))
+          : [],
+      ],
+      breaksValues: ({result, repeatsValues: expected, breaks}) => [
+        ...result ? [[...expected]] : [],
+        ...breaks === result && expected.length > 1
+          ? Array.from({length: expected.length - 1}, (_, i) => addBreaks(expected, i + 1, 1))
+          : [],
+      ],
+      startsWithValues: ({result, breaksValues: expected, startsWith}) => [
+        ...result ? [[...expected]] : [],
+        ...!startsWith === result
+          ? [[0, ...expected]]
+          : [],
+      ],
+      endsWithValues: ({result, startsWithValues: expected, endsWith}) => [
+        ...result ? [[...expected]] : [],
+        ...!endsWith === result
+          ? [[...expected, 0]]
+          : [],
+      ],
+      actual: ({
+        result, endsWithValues: expected, startsWith, endsWith, repeats, breaks,
+      }) => [
+        [...expected],
+      ],
+      log: ({actual, result}) => {
+        console.log(actual, result)
+        return [true]
+      },
+    })()
   })
 })
