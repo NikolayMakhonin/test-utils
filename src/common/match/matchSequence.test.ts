@@ -22,12 +22,8 @@ function matchSequence(actual: number[], expected: number[], options: Options): 
       if (lastIncrementActual && !lastIncrementExpected) {
         indexExpected++
         lastIncrementExpected = true
-        // lastIncrementActual = false
         continue
       }
-      // else if (!lastIncrementActual && lastIncrementExpected) {
-      //   throw new Error('not implemented')
-      // }
       if (indexActual < actual.length && options?.endsWith && options?.breaks) {
         indexActual = actual.length - 1
         indexExpected = expected.length - 1
@@ -46,7 +42,7 @@ function matchSequence(actual: number[], expected: number[], options: Options): 
       if (indexExpected < expected.length) {
         return false
       }
-      if (indexActual < actual.length && options?.endsWith) {
+      if (indexActual < actual.length) {
         return false
       }
       return true
@@ -61,39 +57,22 @@ function matchSequence(actual: number[], expected: number[], options: Options): 
       else {
         indexActual++
         indexExpected++
-        lastIncrementActual = true
-        lastIncrementExpected = true
       }
     }
     else {
       if (options?.breaks && indexActual > 0 && indexActual < actual.length - 1) {
         indexActual++
-        lastIncrementActual = true
-        lastIncrementExpected = true
         continue
       }
       if (lastIncrementActual && !lastIncrementExpected) {
         indexExpected++
-        lastIncrementExpected = true
-      }
-      else if (!lastIncrementActual && lastIncrementExpected) {
-        indexActual++
-        lastIncrementActual = true
+        lastIncrementExpected = true // TODO test variants
       }
       else if (!options?.startsWith) {
         indexActualStart++
         indexActual = indexActualStart
         indexExpected = indexExpectedStart
-        lastIncrementActual = false
-        lastIncrementExpected = false
       }
-      // else if (options?.repeats) {
-      //   indexExpectedStart++
-      //   indexActual = indexActualStart
-      //   indexExpected = indexExpectedStart
-      //   lastIncrementActual = false
-      //   lastIncrementExpected = false
-      // }
       else {
         return false
       }
@@ -137,10 +116,10 @@ describe('matchSequence', function () {
       endsWith  : [true, false],
       repeats   : [false, true],
       breaks    : [false, true],
-      expected  : ({repeats}) => [
+      expected  : ({repeats, result}) => [
         [],
         [1],
-        ...!repeats ? [[1, 1], [1, 1, 2, 2]] : [],
+        ...!repeats === result ? [[1, 1], [1, 1, 2, 2], [1, 1, 2, 3]] : [],
         [1, 2, 3],
       ],
       actualValues: ({result, expected, breaks, startsWith, endsWith}) => [
