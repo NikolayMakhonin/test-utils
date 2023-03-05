@@ -211,39 +211,70 @@ describe('matchSequence', function () {
 
   it('variants 2', async function () {
     await testVariants<{
+      resultFalseType: string
+      expectedValues: number[]
       repeatsValues: number[]
       breaksValues: number[]
       startsWithValues: number[]
       endsWithValues: number[]
       log: boolean
     }>({
-      result       : [true, false],
-      startsWith   : [true, false],
-      endsWith     : [true],
-      repeats      : [false],
-      breaks       : [false],
-      expected     : [[], [1], [1, 2], [1, 2, 1], [1, 2, 1, 2], [1, 2, 3]],
-      repeatsValues: ({result, expected, repeats}) => [
-        ...result ? [[...expected]] : [],
-        ...repeats === result && expected.length > 0
-          ? expected.map((_, i) => addRepeats(expected, i, 1))
+      result         : [true, false],
+      startsWith     : [true, false],
+      endsWith       : [true, false],
+      repeats        : [false],
+      breaks         : [false],
+      resultFalseType: ({result, startsWith, endsWith, repeats, breaks}) => result
+        ? ['']
+        : [
+          'expected',
+          ...startsWith ? ['startsWith'] : [],
+          ...endsWith ? ['endsWith'] : [],
+          ...!repeats ? ['repeats'] : [],
+          ...!breaks ? ['breaks'] : [],
+        ],
+      expected      : [[], [1], [1, 2], [1, 2, 1], [1, 2, 1, 2], [1, 2, 3]],
+      expectedValues: ({result, resultFalseType, expected}) => expected.length === 0 ? [] : [
+        ...!result && resultFalseType === 'expected'
+          ? [
+            expected.slice(0, expected.length - 1),
+            expected.slice(1),
+          ]
+          : [expected],
+      ],
+      repeatsValues: ({
+        result, resultFalseType, startsWith, endsWith, expectedValues: expected, repeats,
+      }) => [
+        ...result || resultFalseType !== 'repeats'
+          ? [expected]
+          : [],
+        ...resultFalseType === 'repeats' || result && repeats && expected.length > 0
+          ? expected.map((_, i) => !startsWith && i === 0 ? null
+            : !endsWith && i === expected.length - 1 ? null
+              : addRepeats(expected, i, 1)).filter(o => o)
           : [],
       ],
-      breaksValues: ({result, repeatsValues: expected, breaks}) => [
-        ...result ? [[...expected]] : [],
-        ...breaks === result && expected.length > 1
+      breaksValues: ({result, resultFalseType, repeatsValues: expected, breaks}) => [
+        ...result || resultFalseType !== 'breaks'
+          ? [expected]
+          : [],
+        ...resultFalseType === 'breaks' || result && breaks && expected.length > 1
           ? Array.from({length: expected.length - 1}, (_, i) => addBreaks(expected, i + 1, 1))
           : [],
       ],
-      startsWithValues: ({result, breaksValues: expected, startsWith}) => [
-        ...result ? [[...expected]] : [],
-        ...!startsWith === result
+      startsWithValues: ({result, resultFalseType, breaksValues: expected, startsWith}) => [
+        ...result || resultFalseType !== 'startsWith'
+          ? [expected]
+          : [],
+        ...resultFalseType === 'startsWith' || result && !startsWith
           ? [[0, ...expected]]
           : [],
       ],
-      endsWithValues: ({result, startsWithValues: expected, endsWith}) => [
-        ...result ? [[...expected]] : [],
-        ...!endsWith === result
+      endsWithValues: ({result, resultFalseType, startsWithValues: expected, endsWith}) => [
+        ...result || resultFalseType !== 'endsWith'
+          ? [expected]
+          : [],
+        ...resultFalseType === 'endsWith' || result && !endsWith
           ? [[...expected, 0]]
           : [],
       ],
