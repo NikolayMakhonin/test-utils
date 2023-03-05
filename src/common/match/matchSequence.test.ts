@@ -16,17 +16,18 @@ function matchSequence(actual: number[], expected: number[], options: Options): 
   let lastIncrementExpected = false
   while (true) {
     if (indexActual >= actual.length || indexExpected >= expected.length) {
-      if (lastIncrementActual && !lastIncrementExpected) {
-        indexExpected++
-        lastIncrementExpected = true
-        lastIncrementActual = false
-      }
-      else if (!lastIncrementActual && lastIncrementExpected) {
-        throw new Error('not implemented')
-      }
       if (indexExpected >= expected.length && !options?.endsWith) {
         return true
       }
+      if (lastIncrementActual && !lastIncrementExpected) {
+        indexExpected++
+        lastIncrementExpected = true
+        // lastIncrementActual = false
+        continue
+      }
+      // else if (!lastIncrementActual && lastIncrementExpected) {
+      //   throw new Error('not implemented')
+      // }
       if (indexActual < actual.length && !options?.startsWith) {
         indexActualStart++
         indexActual = indexActualStart
@@ -35,14 +36,14 @@ function matchSequence(actual: number[], expected: number[], options: Options): 
         lastIncrementExpected = false
         continue
       }
-      if (indexActual >= actual.length && indexExpected < expected.length && options?.repeats) {
-        indexExpectedStart++
-        indexActual = indexActualStart
-        indexExpected = indexExpectedStart
-        lastIncrementActual = false
-        lastIncrementExpected = false
-        continue
-      }
+      // if (indexActual >= actual.length && indexExpected < expected.length && options?.repeats) {
+      //   indexExpectedStart++
+      //   indexActual = indexActualStart
+      //   indexExpected = indexExpectedStart
+      //   lastIncrementActual = false
+      //   lastIncrementExpected = false
+      //   continue
+      // }
       if (indexExpected < expected.length) {
         return false
       }
@@ -69,12 +70,12 @@ function matchSequence(actual: number[], expected: number[], options: Options): 
       if (lastIncrementActual && !lastIncrementExpected) {
         indexExpected++
         lastIncrementExpected = true
-        lastIncrementActual = false
+        // lastIncrementActual = false
       }
       else if (!lastIncrementActual && lastIncrementExpected) {
         indexActual++
         lastIncrementActual = true
-        lastIncrementExpected = false
+        // lastIncrementExpected = false
       }
       else if (!options?.startsWith) {
         indexActualStart++
@@ -131,8 +132,13 @@ describe('matchSequence', function () {
       endsWith  : [true, false],
       repeats   : [false, true],
       breaks    : [false],
-      expected  : [[], [1], [1, 1], [1, 2, 3]],
-      actual    : ({result, expected, startsWith, endsWith}) => [
+      expected  : ({repeats}) => [
+        [],
+        [1],
+        ...!repeats ? [[1, 1]] : [],
+        [1, 2, 3],
+      ],
+      actual: ({result, expected, startsWith, endsWith, repeats}) => [
         ...result ? [[...expected]] : [],
         ...expected.length === 0 ? [
           ...(!startsWith || !endsWith) === result ? [[1]] : [],
@@ -143,7 +149,7 @@ describe('matchSequence', function () {
           ...!startsWith === result ? [[0, ...expected]] : [],
           ...!endsWith === result ? [[...expected, 0]] : [],
           ...(!startsWith || !endsWith) === result ? [
-            [...expected, ...expected],
+            ...!repeats ? [[...expected, ...expected]] : [],
             [...expected, 0, ...expected],
           ] : [],
           ...(!startsWith && !endsWith) === result ? [
