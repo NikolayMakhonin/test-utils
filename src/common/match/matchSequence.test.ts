@@ -1,13 +1,19 @@
 import {createTestVariants} from '@flemist/test-variants'
 
 type Options = {
-  mayNotStartWith?: boolean
-  mayNotEndWith?: boolean
+  actualMayNotStartWith?: boolean
+  actualMayNotEndWith?: boolean
+  expectedMayNotStartWith?: boolean
+  expectedMayNotEndWith?: boolean
   repeats?: boolean
   breaks?: boolean
 }
 
 function matchSequence(actual: number[], expected: number[], options: Options): boolean {
+  if (options?.actualMayNotStartWith && options?.expectedMayNotStartWith) {
+    throw new Error('not implemented')
+  }
+
   let indexActualStart = 0
   let indexExpectedStart = 0
   let indexActual = 0
@@ -16,7 +22,7 @@ function matchSequence(actual: number[], expected: number[], options: Options): 
   let lastIncrementExpected = false
   while (true) {
     if (indexActual >= actual.length || indexExpected >= expected.length) {
-      if (indexExpected >= expected.length && options?.mayNotEndWith) {
+      if (indexExpected >= expected.length && options?.actualMayNotEndWith) {
         return true
       }
       if (lastIncrementActual && !lastIncrementExpected) {
@@ -24,14 +30,14 @@ function matchSequence(actual: number[], expected: number[], options: Options): 
         lastIncrementExpected = true
         continue
       }
-      if (indexActual < actual.length && !options?.mayNotEndWith && options?.breaks) {
+      if (indexActual < actual.length && !options?.actualMayNotEndWith && options?.breaks) {
         indexActual = actual.length - 1
         indexExpected = expected.length - 1
         lastIncrementActual = true
         lastIncrementExpected = true
         continue
       }
-      if (indexActual < actual.length && options?.mayNotStartWith) {
+      if (indexActual < actual.length && options?.actualMayNotStartWith) {
         indexActualStart++
         indexActual = indexActualStart
         indexExpected = indexExpectedStart
@@ -39,7 +45,16 @@ function matchSequence(actual: number[], expected: number[], options: Options): 
         lastIncrementExpected = false
         continue
       }
-      if (indexExpected < expected.length) {
+      if (indexExpected < expected.length && options?.expectedMayNotStartWith) {
+        indexActualStart = 0
+        indexExpectedStart++
+        indexActual = indexActualStart
+        indexExpected = indexExpectedStart
+        lastIncrementActual = false
+        lastIncrementExpected = false
+        continue
+      }
+      if (indexExpected < expected.length && !options?.expectedMayNotEndWith) {
         return false
       }
       if (indexActual < actual.length) {
@@ -49,7 +64,7 @@ function matchSequence(actual: number[], expected: number[], options: Options): 
     }
 
     if (actual[indexActual] === expected[indexExpected]) {
-      if (options?.repeats && !options?.breaks) {
+      if (options?.repeats && (!options?.breaks || indexActual >= actual.length - 2)) {
         indexActual++
         lastIncrementActual = true
         lastIncrementExpected = false
@@ -68,8 +83,13 @@ function matchSequence(actual: number[], expected: number[], options: Options): 
         indexExpected++
         lastIncrementExpected = true
       }
-      else if (options?.mayNotStartWith) {
+      else if (options?.actualMayNotStartWith) {
         indexActualStart++
+        indexActual = indexActualStart
+        indexExpected = indexExpectedStart
+      }
+      else if (options?.expectedMayNotStartWith && indexExpectedStart < expected.length) {
+        indexExpectedStart++
         indexActual = indexActualStart
         indexExpected = indexExpectedStart
       }
@@ -100,23 +120,30 @@ describe('matchSequence', function () {
   const testVariants = createTestVariants(({
     actual,
     expected,
-    mayNotStartWith,
-    mayNotEndWith,
+    actualMayNotStartWith,
+    actualMayNotEndWith,
+    expectedMayNotStartWith,
+    expectedMayNotEndWith,
     repeats,
     breaks,
     result,
   }: {
     actual: number[]
     expected: number[]
-    mayNotStartWith?: boolean
-    mayNotEndWith?: boolean
+    actualMayNotStartWith?: boolean
+    actualMayNotEndWith?: boolean
+    expectedMayNotStartWith?: boolean
+    expectedMayNotEndWith?: boolean
     repeats?: boolean
     breaks?: boolean
     result: boolean
   }) => {
+    // console.log(actual, result)
     const resultActual = matchSequence(actual, expected, {
-      mayNotStartWith,
-      mayNotEndWith,
+      actualMayNotStartWith,
+      actualMayNotEndWith,
+      expectedMayNotStartWith,
+      expectedMayNotEndWith,
       repeats,
       breaks,
     })
@@ -127,12 +154,14 @@ describe('matchSequence', function () {
     await testVariants<{
       actualValues: number[]
     }>({
-      result         : [true, false],
-      mayNotStartWith: [false, true],
-      mayNotEndWith  : [false, true],
-      repeats        : [false, true],
-      breaks         : [false, true],
-      expected       : ({repeats, result}) => [
+      result                 : [true, false],
+      actualMayNotStartWith  : [false, true],
+      actualMayNotEndWith    : [false, true],
+      expectedMayNotStartWith: [false],
+      expectedMayNotEndWith  : [false],
+      repeats                : [false, true],
+      breaks                 : [false, true],
+      expected               : ({repeats, result}) => [
         [],
         [1],
         ...!repeats === result ? [[1, 1], [1, 1, 2, 2], [1, 1, 2, 3]] : [],
@@ -140,36 +169,36 @@ describe('matchSequence', function () {
         [1, 2, 1],
         [1, 2, 1, 2],
       ],
-      actualValues: ({result, expected, breaks, mayNotStartWith, mayNotEndWith}) => [
+      actualValues: ({result, expected, breaks, actualMayNotStartWith, actualMayNotEndWith}) => [
         expected,
         ...expected.length > 1 && breaks ? [
           expected.flatMap((o, i) => i === 0 ? [o] : [0, 0, o]),
           expected.flatMap((o, i) => i === 0 ? [o] : [o, o]),
           expected.flatMap((o, i) => i === 0 ? [o] : [o, 0, o]),
           [...expected, ...expected.slice().reverse(), expected[expected.length - 1]],
-          ...mayNotStartWith === result ? [[...expected.slice().reverse(), ...expected]] : [],
-          ...mayNotEndWith === result ? [[...expected, ...expected.slice().reverse()]] : [],
+          ...actualMayNotStartWith === result ? [[...expected.slice().reverse(), ...expected]] : [],
+          ...actualMayNotEndWith === result ? [[...expected, ...expected.slice().reverse()]] : [],
         ] : [],
       ],
       actual: ({
-        result, actualValues: expected, mayNotStartWith, mayNotEndWith, repeats, breaks,
+        result, actualValues: expected, actualMayNotStartWith, actualMayNotEndWith, repeats, breaks,
       }) => [
         ...result ? [[...expected]] : [],
         ...expected.length === 0 ? [
-          ...(mayNotStartWith || mayNotEndWith) === result ? [[1]] : [],
+          ...(actualMayNotStartWith || actualMayNotEndWith) === result ? [[1]] : [],
         ]: [
           ...!result ? [[]] : [],
           ...!breaks ? [
             ...!result ? [[...expected.slice(0, expected.length - 1)]] : [],
             ...!result ? [[...expected.slice(1)]] : [],
           ] : [],
-          ...mayNotStartWith === result ? [[0, ...expected]] : [],
-          ...mayNotEndWith === result ? [[...expected, 0]] : [],
-          ...(mayNotStartWith || mayNotEndWith || breaks) === result ? [
+          ...actualMayNotStartWith === result ? [[0, ...expected]] : [],
+          ...actualMayNotEndWith === result ? [[...expected, 0]] : [],
+          ...(actualMayNotStartWith || actualMayNotEndWith || breaks) === result ? [
             ...!repeats ? [[...expected, ...expected]] : [],
             [...expected, 0, ...expected],
           ] : [],
-          ...(mayNotStartWith && mayNotEndWith) === result ? [
+          ...(actualMayNotStartWith && actualMayNotEndWith) === result ? [
             [0, ...expected, 0],
             [0, ...expected, 0, ...expected, 0],
           ] : [],
@@ -179,114 +208,168 @@ describe('matchSequence', function () {
   })
 
   it('simple', async function () {
-    assert.strictEqual(true, matchSequence([1, 2, 3], [1, 2, 3], {mayNotStartWith: false, mayNotEndWith: false, repeats: false, breaks: false}))
-    assert.strictEqual(false, matchSequence([1, 1, 2, 3], [1, 2, 3], {mayNotStartWith: false, mayNotEndWith: false, repeats: false, breaks: false}))
-    assert.strictEqual(false, matchSequence([1, 2, 3], [1, 1, 2, 3], {mayNotStartWith: false, mayNotEndWith: false, repeats: false, breaks: false}))
-    assert.strictEqual(false, matchSequence([1, 2, 3, 3], [1, 2, 3], {mayNotStartWith: false, mayNotEndWith: false, repeats: false, breaks: false}))
-    assert.strictEqual(false, matchSequence([1, 2, 3], [1, 2, 3, 3], {mayNotStartWith: false, mayNotEndWith: false, repeats: false, breaks: false}))
+    assert.strictEqual(true, matchSequence([1, 2, 3], [1, 2, 3, 4], {expectedMayNotStartWith: false, expectedMayNotEndWith: true}))
+    assert.strictEqual(true, matchSequence([1, 2, 3], [0, 1, 2, 3], {expectedMayNotStartWith: true, expectedMayNotEndWith: false}))
+    // assert.strictEqual(true, matchSequence([1, 2, 3], [0, 1, 2, 3], {
+    //   expectedMayNotStartWith: true,
+    //   expectedMayNotEndWith  : false,
+    //   actualMayNotStartWith  : true,
+    // }))
+    // assert.strictEqual(true, matchSequence([1, 2, 3, 4], [0, 1, 2, 3], {
+    //   expectedMayNotStartWith: true,
+    //   expectedMayNotEndWith  : false,
+    //   actualMayNotStartWith  : true,
+    // }))
 
-    assert.strictEqual(true, matchSequence([1, 2, 3], [1, 2, 3], {mayNotStartWith: false, mayNotEndWith: false, repeats: true, breaks: false}))
-    assert.strictEqual(true, matchSequence([1, 1, 2, 3], [1, 2, 3], {mayNotStartWith: false, mayNotEndWith: false, repeats: true, breaks: false}))
-    assert.strictEqual(false, matchSequence([1, 2, 3], [1, 1, 2, 3], {mayNotStartWith: false, mayNotEndWith: false, repeats: true, breaks: false}))
-    assert.strictEqual(true, matchSequence([1, 2, 3, 3], [1, 2, 3], {mayNotStartWith: false, mayNotEndWith: false, repeats: true, breaks: false}))
-    assert.strictEqual(false, matchSequence([1, 2, 3], [1, 2, 3, 3], {mayNotStartWith: false, mayNotEndWith: false, repeats: true, breaks: false}))
-    assert.strictEqual(false, matchSequence([1, 2, 1, 3], [1, 2, 3], {mayNotStartWith: false, mayNotEndWith: false, repeats: true, breaks: false}))
+    assert.strictEqual(false, matchSequence([-1, 1, 2, 3], [1, 2, 3, 4], {expectedMayNotStartWith: false, expectedMayNotEndWith: true}))
+    assert.strictEqual(false, matchSequence([-1, 1, 2, 3], [0, 1, 2, 3], {expectedMayNotStartWith: true, expectedMayNotEndWith: false}))
+    // assert.strictEqual(false, matchSequence([1, 2, 3, 4], [0, 1, 2, 3], {
+    //   expectedMayNotStartWith: true,
+    //   expectedMayNotEndWith  : false,
+    //   actualMayNotStartWith  : true,
+    // }))
+    // assert.strictEqual(false, matchSequence([1, 2, 3, 4], [0, 1, 2, 3], {
+    //   expectedMayNotStartWith: true,
+    //   expectedMayNotEndWith  : false,
+    //   actualMayNotStartWith  : true,
+    // }))
+    assert.throws(() => matchSequence([1, 2, 3], [1, 2, 3], {
+      expectedMayNotStartWith: true,
+      expectedMayNotEndWith  : false,
+      actualMayNotStartWith  : true,
+    }), /not implemented/i)
 
-    assert.strictEqual(true, matchSequence([1, 2, 3], [1, 2, 3], {mayNotStartWith: false, mayNotEndWith: false, repeats: false, breaks: true}))
-    assert.strictEqual(true, matchSequence([1, 1, 2, 3], [1, 2, 3], {mayNotStartWith: false, mayNotEndWith: false, repeats: false, breaks: true}))
-    assert.strictEqual(false, matchSequence([1, 2, 3], [1, 1, 2, 3], {mayNotStartWith: false, mayNotEndWith: false, repeats: false, breaks: true}))
-    assert.strictEqual(true, matchSequence([1, 0, 2, 0, 0, 3], [1, 2, 3], {mayNotStartWith: false, mayNotEndWith: false, repeats: false, breaks: true}))
-    assert.strictEqual(true, matchSequence([1, 0, 2, 3, 2, 1, 3], [1, 2, 3], {mayNotStartWith: false, mayNotEndWith: false, repeats: false, breaks: true}))
-    assert.strictEqual(false, matchSequence([1, 0, 2, 3, 2, 1, 3, 2], [1, 2, 3], {mayNotStartWith: false, mayNotEndWith: false, repeats: false, breaks: true}))
+    assert.strictEqual(true, matchSequence([1, 2, 3], [1, 2, 3], {actualMayNotStartWith: false, actualMayNotEndWith: false, repeats: false, breaks: false}))
+    assert.strictEqual(false, matchSequence([1, 1, 2, 3], [1, 2, 3], {actualMayNotStartWith: false, actualMayNotEndWith: false, repeats: false, breaks: false}))
+    assert.strictEqual(false, matchSequence([1, 2, 3], [1, 1, 2, 3], {actualMayNotStartWith: false, actualMayNotEndWith: false, repeats: false, breaks: false}))
+    assert.strictEqual(false, matchSequence([1, 2, 3, 3], [1, 2, 3], {actualMayNotStartWith: false, actualMayNotEndWith: false, repeats: false, breaks: false}))
+    assert.strictEqual(false, matchSequence([1, 2, 3], [1, 2, 3, 3], {actualMayNotStartWith: false, actualMayNotEndWith: false, repeats: false, breaks: false}))
 
-    assert.strictEqual(true, matchSequence([0, 1, 1, 2, 2, 3, 3, 0], [1, 2, 3], {mayNotStartWith: true, mayNotEndWith: true, repeats: true, breaks: false}))
-    assert.strictEqual(false, matchSequence([0, 1, 1, 2, 2, 1, 3, 3, 0], [1, 2, 3], {mayNotStartWith: true, mayNotEndWith: true, repeats: true, breaks: false}))
-    assert.strictEqual(true, matchSequence([0, 1, 1, 2, 2, 3, 3, 0], [1, 2, 3], {mayNotStartWith: true, mayNotEndWith: true, repeats: false, breaks: true}))
-    assert.strictEqual(true, matchSequence([0, 1, 1, 2, 2, 1, 3, 3, 0], [1, 2, 3], {mayNotStartWith: true, mayNotEndWith: true, repeats: false, breaks: true}))
-    assert.strictEqual(true, matchSequence([0, 1, 1, 2, 2, 3, 3, 0], [1, 2, 3], {mayNotStartWith: true, mayNotEndWith: true, repeats: true, breaks: true}))
-    assert.strictEqual(true, matchSequence([0, 1, 1, 2, 2, 1, 3, 3, 0], [1, 2, 3], {mayNotStartWith: true, mayNotEndWith: true, repeats: true, breaks: true}))
+    assert.strictEqual(true, matchSequence([1, 2, 3], [1, 2, 3], {actualMayNotStartWith: false, actualMayNotEndWith: false, repeats: true, breaks: false}))
+    assert.strictEqual(true, matchSequence([1, 1, 2, 3], [1, 2, 3], {actualMayNotStartWith: false, actualMayNotEndWith: false, repeats: true, breaks: false}))
+    assert.strictEqual(false, matchSequence([1, 2, 3], [1, 1, 2, 3], {actualMayNotStartWith: false, actualMayNotEndWith: false, repeats: true, breaks: false}))
+    assert.strictEqual(true, matchSequence([1, 2, 3, 3], [1, 2, 3], {actualMayNotStartWith: false, actualMayNotEndWith: false, repeats: true, breaks: false}))
+    assert.strictEqual(false, matchSequence([1, 2, 3], [1, 2, 3, 3], {actualMayNotStartWith: false, actualMayNotEndWith: false, repeats: true, breaks: false}))
+    assert.strictEqual(false, matchSequence([1, 2, 1, 3], [1, 2, 3], {actualMayNotStartWith: false, actualMayNotEndWith: false, repeats: true, breaks: false}))
 
-    assert.strictEqual(false, matchSequence([0, 1, 2, 3], [1, 2, 3], {mayNotStartWith: false, mayNotEndWith: false, repeats: false, breaks: true}))
+    assert.strictEqual(true, matchSequence([1, 2, 3], [1, 2, 3], {actualMayNotStartWith: false, actualMayNotEndWith: false, repeats: false, breaks: true}))
+    assert.strictEqual(true, matchSequence([1, 1, 2, 3], [1, 2, 3], {actualMayNotStartWith: false, actualMayNotEndWith: false, repeats: false, breaks: true}))
+    assert.strictEqual(false, matchSequence([1, 2, 3], [1, 1, 2, 3], {actualMayNotStartWith: false, actualMayNotEndWith: false, repeats: false, breaks: true}))
+    assert.strictEqual(true, matchSequence([1, 0, 2, 0, 0, 3], [1, 2, 3], {actualMayNotStartWith: false, actualMayNotEndWith: false, repeats: false, breaks: true}))
+    assert.strictEqual(true, matchSequence([1, 0, 2, 3, 2, 1, 3], [1, 2, 3], {actualMayNotStartWith: false, actualMayNotEndWith: false, repeats: false, breaks: true}))
+    assert.strictEqual(false, matchSequence([1, 0, 2, 3, 2, 1, 3, 2], [1, 2, 3], {actualMayNotStartWith: false, actualMayNotEndWith: false, repeats: false, breaks: true}))
+
+    assert.strictEqual(true, matchSequence([0, 1, 1, 2, 2, 3, 3, 0], [1, 2, 3], {actualMayNotStartWith: true, actualMayNotEndWith: true, repeats: true, breaks: false}))
+    assert.strictEqual(false, matchSequence([0, 1, 1, 2, 2, 1, 3, 3, 0], [1, 2, 3], {actualMayNotStartWith: true, actualMayNotEndWith: true, repeats: true, breaks: false}))
+    assert.strictEqual(true, matchSequence([0, 1, 1, 2, 2, 3, 3, 0], [1, 2, 3], {actualMayNotStartWith: true, actualMayNotEndWith: true, repeats: false, breaks: true}))
+    assert.strictEqual(true, matchSequence([0, 1, 1, 2, 2, 1, 3, 3, 0], [1, 2, 3], {actualMayNotStartWith: true, actualMayNotEndWith: true, repeats: false, breaks: true}))
+    assert.strictEqual(true, matchSequence([0, 1, 1, 2, 2, 3, 3, 0], [1, 2, 3], {actualMayNotStartWith: true, actualMayNotEndWith: true, repeats: true, breaks: true}))
+    assert.strictEqual(true, matchSequence([0, 1, 1, 2, 2, 1, 3, 3, 0], [1, 2, 3], {actualMayNotStartWith: true, actualMayNotEndWith: true, repeats: true, breaks: true}))
+
+    assert.strictEqual(false, matchSequence([0, 1, 2, 3], [1, 2, 3], {actualMayNotStartWith: false, actualMayNotEndWith: false, repeats: false, breaks: true}))
+
   })
 
   it('variants 2', async function () {
     await testVariants<{
       resultFalseType: string
-      expectedValues: number[]
+      values: number[]
+      actualValues: number[]
       repeatsValues: number[]
       breaksValues: number[]
-      mayNotStartWithValues: number[]
-      mayNotEndWithValues: number[]
-      log: boolean
+      actualMayNotStartWithValues: number[]
+      actualMayNotEndWithValues: number[]
+      expectedMayNotStartWithValues: number[]
+      expectedMayNotEndWithValues: number[]
     }>({
-      result         : [true, false],
-      mayNotStartWith: [false, true],
-      mayNotEndWith  : [true, false],
-      repeats        : [false, true],
+      result                 : [true, false],
+      actualMayNotStartWith  : [false],
+      actualMayNotEndWith    : [false],
+      expectedMayNotStartWith: ({actualMayNotStartWith, actualMayNotEndWith}) =>
+        actualMayNotStartWith || actualMayNotEndWith ? [false] : [false, true],
+      expectedMayNotEndWith: ({actualMayNotStartWith, actualMayNotEndWith, expectedMayNotStartWith}) =>
+        actualMayNotStartWith || actualMayNotEndWith || expectedMayNotStartWith ? [false] : [false, true],
+      repeats        : [false],
       breaks         : [false, true],
-      resultFalseType: ({result, mayNotStartWith, mayNotEndWith, repeats, breaks}) => result
+      resultFalseType: ({
+        result,
+        actualMayNotStartWith, actualMayNotEndWith,
+        expectedMayNotStartWith, expectedMayNotEndWith,
+        repeats, breaks,
+      }) => result
         ? ['']
         : [
-          'expected',
-          ...!mayNotStartWith ? ['mayNotStartWith'] : [],
-          ...!mayNotEndWith ? ['mayNotEndWith'] : [],
+          'actual',
+          ...!actualMayNotStartWith ? ['actualMayNotStartWith'] : [],
+          ...!actualMayNotEndWith ? ['actualMayNotEndWith'] : [],
+          ...!expectedMayNotStartWith ? ['expectedMayNotStartWith'] : [],
+          ...!expectedMayNotEndWith ? ['expectedMayNotEndWith'] : [],
           ...!repeats && !breaks ? ['repeats'] : [],
           ...!breaks ? ['breaks'] : [],
         ],
-      expected      : [[], [1], [1, 2], [1, 2, 1], [1, 2, 1, 2], [1, 2, 3]],
-      expectedValues: ({result, resultFalseType, expected}) => expected.length === 0 ? [] : [
-        ...!result && resultFalseType === 'expected'
+      values      : [[], [1], [1, 2], [1, 2, 1], [1, 2, 1, 2], [1, 2, 3]],
+      actualValues: ({result, resultFalseType, values, expectedMayNotStartWith, expectedMayNotEndWith}) => values.length === 0 ? [] : [
+        ...!result && resultFalseType === 'actual'
           ? [
-            expected.slice(0, expected.length - 1),
-            expected.slice(1),
+            ...!expectedMayNotStartWith && (values.length > 1 || !expectedMayNotEndWith) ? [values.slice(1)] : [],
+            ...!expectedMayNotEndWith && (values.length > 1 || !expectedMayNotStartWith) ? [values.slice(0, values.length - 1)] : [],
           ]
-          : [expected],
+          : [values],
+      ],
+      breaksValues: ({result, resultFalseType, actualValues: values, breaks}) => [
+        ...result || resultFalseType !== 'breaks'
+          ? [values]
+          : [],
+        ...resultFalseType === 'breaks' || result && breaks && values.length > 1
+          ? Array.from({length: values.length - 1}, (_, i) => addBreaks(values, i + 1, 1))
+          : [],
       ],
       repeatsValues: ({
-        result, resultFalseType, mayNotStartWith, mayNotEndWith, expectedValues: expected, repeats,
+        result, resultFalseType, actualMayNotStartWith, actualMayNotEndWith, breaksValues: values, repeats,
       }) => [
         ...result || resultFalseType !== 'repeats'
-          ? [expected]
+          ? [values]
           : [],
-        ...resultFalseType === 'repeats' || result && repeats && expected.length > 0
-          ? expected.map((_, i) => mayNotStartWith && i === 0 ? null
-            : mayNotEndWith && i === expected.length - 1 ? null
-              : addRepeats(expected, i, 1)).filter(o => o)
-          : [],
-      ],
-      breaksValues: ({result, resultFalseType, repeatsValues: expected, breaks}) => [
-        ...result || resultFalseType !== 'breaks'
-          ? [expected]
-          : [],
-        ...resultFalseType === 'breaks' || result && breaks && expected.length > 1
-          ? Array.from({length: expected.length - 1}, (_, i) => addBreaks(expected, i + 1, 1))
+        ...resultFalseType === 'repeats' || result && repeats && values.length > 0
+          ? values.map((_, i) => actualMayNotStartWith && i === 0 ? null
+            : actualMayNotEndWith && i === values.length - 1 ? null
+              : addRepeats(values, i, 1)).filter(o => o)
           : [],
       ],
-      mayNotStartWithValues: ({result, resultFalseType, breaksValues: expected, mayNotStartWith}) => [
-        ...result || resultFalseType !== 'mayNotStartWith'
-          ? [expected]
+      actualMayNotStartWithValues: ({result, resultFalseType, repeatsValues: values, actualMayNotStartWith}) => [
+        ...result || resultFalseType !== 'actualMayNotStartWith'
+          ? [values]
           : [],
-        ...resultFalseType === 'mayNotStartWith' || result && mayNotStartWith
-          ? [[0, ...expected]]
-          : [],
-      ],
-      mayNotEndWithValues: ({result, resultFalseType, mayNotStartWithValues: expected, mayNotEndWith}) => [
-        ...result || resultFalseType !== 'mayNotEndWith'
-          ? [expected]
-          : [],
-        ...resultFalseType === 'mayNotEndWith' || result && mayNotEndWith
-          ? [[...expected, 0]]
+        ...resultFalseType === 'actualMayNotStartWith' || result && actualMayNotStartWith
+          ? [[0, ...values]]
           : [],
       ],
-      actual: ({
-        result, mayNotEndWithValues: expected, mayNotStartWith, mayNotEndWith, repeats, breaks,
-      }) => [
-        [...expected],
+      actualMayNotEndWithValues: ({result, resultFalseType, actualMayNotStartWithValues: values, actualMayNotEndWith}) => [
+        ...result || resultFalseType !== 'actualMayNotEndWith'
+          ? [values]
+          : [],
+        ...resultFalseType === 'actualMayNotEndWith' || result && actualMayNotEndWith
+          ? [[...values, 0]]
+          : [],
       ],
-      log: ({actual, result}) => {
-        console.log(actual, result)
-        return [true]
-      },
+      expectedMayNotStartWithValues: ({result, resultFalseType, values, expectedMayNotStartWith}) => [
+        ...result || resultFalseType !== 'expectedMayNotStartWith'
+          ? [values]
+          : [],
+        ...resultFalseType === 'expectedMayNotStartWith' || result && expectedMayNotStartWith
+          ? [[0, ...values]]
+          : [],
+      ],
+      expectedMayNotEndWithValues: ({result, resultFalseType, expectedMayNotStartWithValues: values, expectedMayNotEndWith}) => [
+        ...result || resultFalseType !== 'expectedMayNotEndWith'
+          ? [values]
+          : [],
+        ...resultFalseType === 'expectedMayNotEndWith' || result && expectedMayNotEndWith
+          ? [[...values, 0]]
+          : [],
+      ],
+      expected: ({expectedMayNotEndWithValues: values}) => [values],
+      actual  : ({actualMayNotEndWithValues: values}) => [values],
     })()
   })
 })
