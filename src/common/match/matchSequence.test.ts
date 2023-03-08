@@ -10,8 +10,19 @@ type Options = {
 }
 
 function matchSequence(actual: number[], expected: number[], options: Options): boolean {
-  if (options?.actualMayNotStartWith && options?.expectedMayNotStartWith) {
-    throw new Error('not implemented')
+  if (
+    (options?.actualMayNotStartWith || options?.actualMayNotEndWith)
+    && (options?.expectedMayNotStartWith || options?.expectedMayNotEndWith)
+  ) {
+    throw new Error(`You can't use both actualMayNotStartWith(${
+      options?.actualMayNotStartWith
+    })/actualMayNotEndWith(${
+      options?.actualMayNotEndWith
+    }) and expectedMayNotStartWith(${
+      options?.expectedMayNotStartWith
+    })/expectedMayNotEndWith(${
+      options?.expectedMayNotEndWith
+    })`)
   }
 
   let indexActualStart = 0
@@ -20,9 +31,13 @@ function matchSequence(actual: number[], expected: number[], options: Options): 
   let indexExpected = 0
   let lastIncrementActual = false
   let lastIncrementExpected = false
+  let hasAtLeastOneMatch = false
   while (true) {
     if (indexActual >= actual.length || indexExpected >= expected.length) {
       if (indexExpected >= expected.length && options?.actualMayNotEndWith) {
+        return true
+      }
+      if (indexActual >= actual.length && options?.expectedMayNotEndWith) {
         return true
       }
       if (lastIncrementActual && !lastIncrementExpected) {
@@ -30,7 +45,7 @@ function matchSequence(actual: number[], expected: number[], options: Options): 
         lastIncrementExpected = true
         continue
       }
-      if (indexActual < actual.length && !options?.actualMayNotEndWith && options?.breaks) {
+      if (hasAtLeastOneMatch && indexActual < actual.length && !options?.actualMayNotEndWith && options?.breaks) {
         indexActual = actual.length - 1
         indexExpected = expected.length - 1
         lastIncrementActual = true
@@ -46,7 +61,6 @@ function matchSequence(actual: number[], expected: number[], options: Options): 
         continue
       }
       if (indexExpected < expected.length && options?.expectedMayNotStartWith) {
-        indexActualStart = 0
         indexExpectedStart++
         indexActual = indexActualStart
         indexExpected = indexExpectedStart
@@ -64,6 +78,7 @@ function matchSequence(actual: number[], expected: number[], options: Options): 
     }
 
     if (actual[indexActual] === expected[indexExpected]) {
+      hasAtLeastOneMatch = true
       if (options?.repeats && (!options?.breaks || indexActual >= actual.length - 2)) {
         indexActual++
         lastIncrementActual = true
@@ -237,7 +252,7 @@ describe('matchSequence', function () {
       expectedMayNotStartWith: true,
       expectedMayNotEndWith  : false,
       actualMayNotStartWith  : true,
-    }), /not implemented/i)
+    }), /You can't use both/i)
 
     assert.strictEqual(true, matchSequence([1, 2, 3], [1, 2, 3], {actualMayNotStartWith: false, actualMayNotEndWith: false, repeats: false, breaks: false}))
     assert.strictEqual(false, matchSequence([1, 1, 2, 3], [1, 2, 3], {actualMayNotStartWith: false, actualMayNotEndWith: false, repeats: false, breaks: false}))
@@ -283,13 +298,13 @@ describe('matchSequence', function () {
       expectedMayNotEndWithValues: number[]
     }>({
       result                 : [true, false],
-      actualMayNotStartWith  : [false],
-      actualMayNotEndWith    : [false],
+      actualMayNotStartWith  : [false, true],
+      actualMayNotEndWith    : [false, true],
       expectedMayNotStartWith: ({actualMayNotStartWith, actualMayNotEndWith}) =>
         actualMayNotStartWith || actualMayNotEndWith ? [false] : [false, true],
       expectedMayNotEndWith: ({actualMayNotStartWith, actualMayNotEndWith, expectedMayNotStartWith}) =>
-        actualMayNotStartWith || actualMayNotEndWith || expectedMayNotStartWith ? [false] : [false, true],
-      repeats        : [false],
+        actualMayNotStartWith || actualMayNotEndWith ? [false] : [false, true],
+      repeats        : [false, true],
       breaks         : [false, true],
       resultFalseType: ({
         result,
