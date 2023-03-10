@@ -287,12 +287,7 @@ function matchArraySet<T>(
         actualFoundMatcherSet, expectedFoundMatcherSet,
         actualFoundValuesSet, expectedFoundValuesSet,
       )
-      // f1(actualItem, actualCount, expectedMatcherMap)
     })
-    // actualMatcherMap?.forEach((actualCount, actualItem) => {
-    //   f1(actualItem, actualCount, expectedMap)
-    //   f1(actualItem, actualCount, expectedMatcherMap)
-    // })
 
     actualMap?.forEach((actualCount, actualItem) => {
       f2(
@@ -301,7 +296,6 @@ function matchArraySet<T>(
         actualFoundMatcherSet, expectedFoundMatcherSet,
         actualFoundValuesSet, expectedFoundValuesSet,
       )
-      // f2(actualItem, actualCount, expectedMatcherMap)
     })
   }
 
