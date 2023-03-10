@@ -127,7 +127,6 @@
     "eslint-config-pro": "3.0.18",
     "expect": "29.4.1",
     "globby": "=11.1.0",
-    "karma": "6.4.0",
     "karma-chrome-launcher": "3.1.1",
     "karma-coverage": "2.2.0",
     "karma-firefox-launcher": "2.1.2",
