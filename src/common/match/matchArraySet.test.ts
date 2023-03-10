@@ -146,31 +146,57 @@ function matchArraySet<T>(
   }
 
   let expectedMap: Map<T, number>
+  let expectedMatcherMap: Map<T, number>
   for (let i = 0, len = expected.length; i < len; i++) {
     const expectedItem = expected[i]
     let count: number
-    if (!expectedMap) {
-      expectedMap = new Map()
-      count = 1
+    if (typeof expectedItem === 'object') {
+      if (!expectedMatcherMap) {
+        expectedMatcherMap = new Map()
+        count = 1
+      }
+      else {
+        count = (expectedMatcherMap.get(expectedItem) || 0) + 1
+      }
+      expectedMatcherMap.set(expectedItem, count)
     }
-    else {
-      count = (expectedMap.get(expectedItem) || 0) + 1
-    }
-    expectedMap.set(expectedItem, count)
+    // else {
+      if (!expectedMap) {
+        expectedMap = new Map()
+        count = 1
+      }
+      else {
+        count = (expectedMap.get(expectedItem) || 0) + 1
+      }
+      expectedMap.set(expectedItem, count)
+    // }
   }
 
   let actualMap: Map<T, number>
+  let actualMatcherMap: Map<T, number>
   for (let i = 0, len = actual.length; i < len; i++) {
     const actualItem = actual[i]
     let count: number
-    if (!actualMap) {
-      actualMap = new Map()
-      count = 1
+    if (typeof actualItem === 'object') {
+      if (!actualMatcherMap) {
+        actualMatcherMap = new Map()
+        count = 1
+      }
+      else {
+        count = (actualMatcherMap.get(actualItem) || 0) + 1
+      }
+      actualMatcherMap.set(actualItem, count)
     }
-    else {
-      count = (actualMap.get(actualItem) || 0) + 1
-    }
-    actualMap.set(actualItem, count)
+    // else {
+      if (!actualMap) {
+        actualMap = new Map()
+        count = 1
+      }
+      else {
+        count = (actualMap.get(actualItem) || 0) + 1
+      }
+      actualMap.set(actualItem, count)
+    // }
   }
 
   const actualFoundMatcherSet = actualMap && new Set<T>()
@@ -178,145 +204,124 @@ function matchArraySet<T>(
   const actualFoundValuesSet = actualMap && new Set<T>()
   const expectedFoundValuesSet = expectedMap && new Set<T>()
 
-  if (!options?.mayNotContains) {
-    actualMap?.forEach((actualCount, actualItem) => {
-      let expectedCount = expectedMap?.get(actualItem)
-      if (expectedCount) {
-        const minCount = Math.min(actualCount, expectedCount)
-        expectedCount -= minCount
-        actualCount -= minCount
-        if (!expectedCount) {
-          expectedMap.delete(actualItem)
-        }
-        else {
-          expectedMap.set(actualItem, expectedCount)
-        }
-        if (typeof actualItem !== 'object') {
-          actualFoundValuesSet.add(actualItem)
-          expectedFoundValuesSet.add(actualItem)
-        }
-      }
-      if (!actualCount) {
-        actualMap.delete(actualItem)
+  function f1(
+    actualItem, actualCount,
+    actualMap, expectedMap,
+    actualFoundMatcherSet, expectedFoundMatcherSet,
+    actualFoundValuesSet, expectedFoundValuesSet,
+  ) {
+    let expectedCount = expectedMap?.get(actualItem)
+    if (expectedCount) {
+      const minCount = Math.min(actualCount, expectedCount)
+      expectedCount -= minCount
+      actualCount -= minCount
+      if (!expectedCount) {
+        expectedMap.delete(actualItem)
       }
       else {
-        actualMap.set(actualItem, actualCount)
+        expectedMap.set(actualItem, expectedCount)
       }
-    })
+      if (typeof actualItem !== 'object') {
+        actualFoundValuesSet.add(actualItem)
+        expectedFoundValuesSet.add(actualItem)
+      }
+    }
+    if (!actualCount) {
+      actualMap.delete(actualItem)
+      return
+    }
+    actualMap.set(actualItem, actualCount)
+  }
 
-    actualMap?.forEach((actualCount, actualItem) => {
-      if (!actualCount) {
-        return
-      }
-      while (actualCount > 0) {
-        let found = false
-        for (let [expectedItem, expectedCount] of expectedMap) {
-          if (expectedCount > 0 && match(actualItem, expectedItem)) {
-            expectedCount--
-            if (!expectedCount) {
-              expectedMap.delete(expectedItem)
-            }
-            else {
-              expectedMap.set(expectedItem, expectedCount)
-            }
-            actualCount--
-            if (typeof actualItem === 'object') {
-              actualFoundMatcherSet.add(actualItem)
-            }
-            else {
-              actualFoundValuesSet.add(actualItem)
-            }
-            if (typeof expectedItem === 'object') {
-              expectedFoundMatcherSet.add(expectedItem)
-            }
-            else {
-              expectedFoundValuesSet.add(expectedItem)
-            }
-            found = true
-            break
+  function f2(
+    actualItem, actualCount,
+    actualMap, expectedMap,
+    actualFoundMatcherSet, expectedFoundMatcherSet,
+    actualFoundValuesSet, expectedFoundValuesSet,
+  ) {
+    while (actualCount > 0) {
+      let found = false
+      for (let [expectedItem, expectedCount] of expectedMap) {
+        if (expectedCount > 0 && match(actualItem, expectedItem)) {
+          expectedCount--
+          if (!expectedCount) {
+            expectedMap.delete(expectedItem)
           }
-        }
-        if (!found) {
+          else {
+            expectedMap.set(expectedItem, expectedCount)
+          }
+          actualCount--
+          if (typeof actualItem === 'object') {
+            actualFoundMatcherSet.add(actualItem)
+          }
+          else {
+            actualFoundValuesSet.add(actualItem)
+          }
+          if (typeof expectedItem === 'object') {
+            expectedFoundMatcherSet.add(expectedItem)
+          }
+          else {
+            expectedFoundValuesSet.add(expectedItem)
+          }
+          found = true
           break
         }
       }
-      if (!actualCount) {
-        actualMap.delete(actualItem)
+      if (!found) {
+        break
       }
-      else {
-        actualMap.set(actualItem, actualCount)
-      }
+    }
+    if (!actualCount) {
+      actualMap.delete(actualItem)
+    }
+    else {
+      actualMap.set(actualItem, actualCount)
+    }
+  }
+
+  if (!options?.mayNotContains) {
+    actualMap?.forEach((actualCount, actualItem) => {
+      f1(
+        actualItem, actualCount,
+        actualMap, expectedMap,
+        actualFoundMatcherSet, expectedFoundMatcherSet,
+        actualFoundValuesSet, expectedFoundValuesSet,
+      )
+      // f1(actualItem, actualCount, expectedMatcherMap)
+    })
+    // actualMatcherMap?.forEach((actualCount, actualItem) => {
+    //   f1(actualItem, actualCount, expectedMap)
+    //   f1(actualItem, actualCount, expectedMatcherMap)
+    // })
+
+    actualMap?.forEach((actualCount, actualItem) => {
+      f2(
+        actualItem, actualCount,
+        actualMap, expectedMap,
+        actualFoundMatcherSet, expectedFoundMatcherSet,
+        actualFoundValuesSet, expectedFoundValuesSet,
+      )
+      // f2(actualItem, actualCount, expectedMatcherMap)
     })
   }
 
   if (!options?.mayNotContained) {
     expectedMap?.forEach((expectedCount, expectedItem) => {
-      let actualCount = actualMap?.get(expectedItem)
-      if (actualCount) {
-        const minCount = Math.min(actualCount, expectedCount)
-        expectedCount -= minCount
-        actualCount -= minCount
-        if (!actualCount) {
-          actualMap.delete(expectedItem)
-        }
-        else {
-          actualMap.set(expectedItem, actualCount)
-        }
-        if (typeof expectedItem !== 'object') {
-          actualFoundValuesSet.add(expectedItem)
-          expectedFoundValuesSet.add(expectedItem)
-        }
-      }
-      if (!expectedCount) {
-        expectedMap.delete(expectedItem)
-      }
-      else {
-        expectedMap.set(expectedItem, expectedCount)
-      }
+      f1(
+        expectedItem, expectedCount,
+        expectedMap, actualMap,
+        expectedFoundMatcherSet, actualFoundMatcherSet,
+        expectedFoundValuesSet, actualFoundValuesSet,
+      )
     })
 
     expectedMap?.forEach((expectedCount, expectedItem) => {
-      if (!expectedCount) {
-        return
-      }
-      while (expectedCount > 0) {
-        let found = false
-        for (let [actualItem, actualCount] of actualMap) {
-          if (actualCount > 0 && match(actualItem, expectedItem)) {
-            actualCount--
-            if (!actualCount) {
-              actualMap.delete(actualItem)
-            }
-            else {
-              actualMap.set(actualItem, actualCount)
-            }
-            expectedCount--
-            if (typeof actualItem === 'object') {
-              actualFoundMatcherSet.add(actualItem)
-            }
-            else {
-              actualFoundValuesSet.add(actualItem)
-            }
-            if (typeof expectedItem === 'object') {
-              expectedFoundMatcherSet.add(expectedItem)
-            }
-            else {
-              expectedFoundValuesSet.add(expectedItem)
-            }
-            found = true
-            break
-          }
-        }
-        if (!found) {
-          break
-        }
-      }
-      if (!expectedCount) {
-        expectedMap.delete(expectedItem)
-      }
-      else {
-        expectedMap.set(expectedItem, expectedCount)
-      }
+      f2(
+        expectedItem, expectedCount,
+        expectedMap, actualMap,
+        expectedFoundMatcherSet, actualFoundMatcherSet,
+        expectedFoundValuesSet, actualFoundValuesSet,
+      )
     })
   }
 
@@ -325,6 +330,44 @@ function matchArraySet<T>(
   let actualFoundValuesArray: T[]
   let expectedFoundValuesArray: T[]
 
+  function f3(
+    actualItem,
+    actualFoundMatcherSet, expectedFoundMatcherSet,
+    actualFoundValuesSet, expectedFoundValuesSet,
+  ) {
+    if (expectedFoundValuesSet?.has(actualItem)) {
+      return true
+    }
+
+    let found = false
+    if (typeof actualItem === 'object') {
+      if (!expectedFoundValuesArray) {
+        expectedFoundValuesArray = Array.from(expectedFoundValuesSet)
+      }
+      for (let i = 0, len = expectedFoundValuesArray.length; i < len; i++) {
+        const expectedItem = expectedFoundValuesArray[i]
+        if (match(actualItem, expectedItem)) {
+          found = true
+          break
+        }
+      }
+    }
+    if (!found) {
+      if (!expectedFoundMatcherArray) {
+        expectedFoundMatcherArray = Array.from(expectedFoundMatcherSet)
+      }
+      for (let i = 0, len = expectedFoundMatcherArray.length; i < len; i++) {
+        const expectedItem = expectedFoundMatcherArray[i]
+        if (match(actualItem, expectedItem)) {
+          found = true
+          break
+        }
+      }
+    }
+
+    return found
+  }
+
   if (actualMap.size > 0) {
     if (options?.mayNotContained) {
       return true
@@ -332,44 +375,14 @@ function matchArraySet<T>(
 
     if (options?.actualRepeats) {
       for (let [actualItem, actualCount] of actualMap) {
-        if (!actualCount) {
-          continue
-        }
-
-        if (expectedFoundValuesSet?.has(actualItem)) {
-          continue
-        }
-
-        let found = false
-        if (typeof actualItem === 'object') {
-          if (!expectedFoundValuesArray) {
-            expectedFoundValuesArray = Array.from(expectedFoundValuesSet)
-          }
-          for (let i = 0, len = expectedFoundValuesArray.length; i < len; i++) {
-            const expectedItem = expectedFoundValuesArray[i]
-            if (match(actualItem, expectedItem)) {
-              found = true
-              break
-            }
-          }
-        }
-        if (!found) {
-          if (!expectedFoundMatcherArray) {
-            expectedFoundMatcherArray = Array.from(expectedFoundMatcherSet)
-          }
-          for (let i = 0, len = expectedFoundMatcherArray.length; i < len; i++) {
-            const expectedItem = expectedFoundMatcherArray[i]
-            if (match(actualItem, expectedItem)) {
-              found = true
-              break
-            }
-          }
-        }
-
+        const found = f3(
+          actualItem,
+          actualFoundMatcherSet, expectedFoundMatcherSet,
+          actualFoundValuesSet, expectedFoundValuesSet,
+        )
         if (!found) {
           return false
         }
-        actualCount--
       }
     }
     else {
@@ -384,44 +397,14 @@ function matchArraySet<T>(
 
     if (options?.expectedRepeats) {
       for (let [expectedItem, expectedCount] of expectedMap) {
-        if (!expectedCount) {
-          continue
-        }
-
-        if (actualFoundValuesSet?.has(expectedItem)) {
-          continue
-        }
-
-        let found = false
-        if (typeof expectedItem === 'object') {
-          if (!actualFoundValuesArray) {
-            actualFoundValuesArray = Array.from(actualFoundValuesSet)
-          }
-          for (let i = 0, len = actualFoundValuesArray.length; i < len; i++) {
-            const actualItem = actualFoundValuesArray[i]
-            if (match(actualItem, expectedItem)) {
-              found = true
-              break
-            }
-          }
-        }
-        if (!found) {
-          if (!actualFoundMatcherArray) {
-            actualFoundMatcherArray = Array.from(actualFoundMatcherSet)
-          }
-          for (let i = 0, len = actualFoundMatcherArray.length; i < len; i++) {
-            const actualItem = actualFoundMatcherArray[i]
-            if (match(actualItem, expectedItem)) {
-              found = true
-              break
-            }
-          }
-        }
-
+        const found = f3(
+          expectedItem,
+          actualFoundMatcherSet, expectedFoundMatcherSet,
+          actualFoundValuesSet, expectedFoundValuesSet,
+        )
         if (!found) {
           return false
         }
-        expectedCount--
       }
     }
     else {
