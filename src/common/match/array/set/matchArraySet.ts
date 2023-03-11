@@ -2,7 +2,7 @@ import {MatchArraySetOptions} from './contracts'
 import {matchArraySetSimple} from './matchArraySetSimple'
 import {matchArraySetOptimized} from './matchArraySetOptimized'
 
-function shouldUseOptimized(
+export function shouldUseOptimized(
   actual: any[],
   expected: any[],
   options: MatchArraySetOptions,
@@ -12,9 +12,9 @@ function shouldUseOptimized(
     return false
   }
 
-  if (matchCountSimple >= 10000) {
-    return true
-  }
+  // if (matchCountSimple >= 10000) {
+  //   return true
+  // }
 
   let countMatchersActual = 0
   for (let i = 0, len = actual.length; i < len; i++) {
@@ -34,8 +34,9 @@ function shouldUseOptimized(
 
   const matchCountOptimized = (actual.length - countMatchersActual) * countMatchersExpected
     + (expected.length - countMatchersExpected) * countMatchersActual
+    + countMatchersActual * countMatchersExpected
 
-  if (matchCountSimple / matchCountOptimized >= 2) {
+  if (matchCountSimple >= 2 * matchCountOptimized) {
     return true
   }
 

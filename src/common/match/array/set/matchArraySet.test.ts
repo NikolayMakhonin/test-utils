@@ -3,6 +3,7 @@ import {createTestVariants} from '@flemist/test-variants'
 import {calcPerformance} from 'rdtsc'
 import {matchArraySetSimple} from './matchArraySetSimple'
 import {matchArraySetOptimized} from './matchArraySetOptimized'
+import {matchArraySet, shouldUseOptimized} from "src/common/match/array/set/matchArraySet";
 
 function addRepeats(arr: number[], index: number, count: number) {
   const result = [...arr]
@@ -315,19 +316,19 @@ describe('matchArraySet', function () {
         })
       },
       () => {
-        matchArraySetOptimized(actual, expected, match, {
+        matchArraySet(actual, expected, match, {
           mayNotContains : true,
           mayNotContained: false,
           actualRepeats  : true,
           expectedRepeats: true,
         })
-        matchArraySetOptimized(actual, expected, match, {
+        matchArraySet(actual, expected, match, {
           mayNotContains : false,
           mayNotContained: true,
           actualRepeats  : true,
           expectedRepeats: true,
         })
-        matchArraySetOptimized(actual, expected, match, {
+        matchArraySet(actual, expected, match, {
           mayNotContains : false,
           mayNotContained: false,
           actualRepeats  : true,
@@ -338,5 +339,21 @@ describe('matchArraySet', function () {
 
     console.log('perf iterations: ' + result.calcInfo.iterations)
     console.log(Math.round((result.relativeDiff[0] - 1) * 100) + '%')
+  })
+
+  it('shouldUseOptimized', function () {
+    const options = {}
+    function array(values, matchers) {
+      return Array.from({length: values + matchers}, (_, i) => i >= values ? {value: i} : i)
+    }
+    assert.strictEqual(shouldUseOptimized([], [], options), false)
+    assert.strictEqual(shouldUseOptimized(array(5, 0), array(6, 0), options), false)
+    assert.strictEqual(shouldUseOptimized(array(1, 0), array(30, 0), options), false)
+    assert.strictEqual(shouldUseOptimized(array(1, 0), array(31, 0), options), true)
+    assert.strictEqual(shouldUseOptimized(array(0, 100), array(0, 100), options), false)
+    assert.strictEqual(shouldUseOptimized(array(0, 10000), array(0, 1), options), false)
+    assert.strictEqual(shouldUseOptimized(array(0, 9999), array(0, 1), options), false)
+    assert.strictEqual(shouldUseOptimized(array(1, 0), array(30, 30), options), true)
+    assert.strictEqual(shouldUseOptimized(array(1, 0), array(30, 31), options), false)
   })
 })
