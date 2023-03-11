@@ -1,5 +1,4 @@
 import {MatchArraySetOptions} from './contracts'
-import {isMatcher} from "src/common/match/array/test/helpers";
 
 export function matchArraySetOptimized<T>(
   actual: T[],
