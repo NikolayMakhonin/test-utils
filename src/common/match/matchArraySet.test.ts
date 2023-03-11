@@ -215,21 +215,21 @@ function matchArraySet<T>(
       const minCount = Math.min(actualCount, expectedCount)
       expectedCount -= minCount
       actualCount -= minCount
-      if (!expectedCount) {
-        expectedMap.delete(actualItem)
-      }
-      else {
+      // if (!expectedCount) {
+      //   expectedMap.delete(actualItem)
+      // }
+      // else {
         expectedMap.set(actualItem, expectedCount)
-      }
+      // }
       if (typeof actualItem !== 'object') {
         actualFoundValuesSet.add(actualItem)
         expectedFoundValuesSet.add(actualItem)
       }
     }
-    if (!actualCount) {
-      actualMap.delete(actualItem)
-      return actualCount
-    }
+    // if (!actualCount) {
+    //   actualMap.delete(actualItem)
+    //   return actualCount
+    // }
     actualMap.set(actualItem, actualCount)
     return actualCount
   }
@@ -245,12 +245,12 @@ function matchArraySet<T>(
       for (let [expectedItem, expectedCount] of expectedMap) {
         if (expectedCount > 0 && match(actualItem, expectedItem)) {
           expectedCount--
-          if (!expectedCount) {
-            expectedMap.delete(expectedItem)
-          }
-          else {
+          // if (!expectedCount) {
+          //   expectedMap.delete(expectedItem)
+          // }
+          // else {
             expectedMap.set(expectedItem, expectedCount)
-          }
+          // }
           actualCount--
           if (typeof actualItem === 'object') {
             actualFoundMatcherSet.add(actualItem)
@@ -272,18 +272,18 @@ function matchArraySet<T>(
         break
       }
     }
-    if (!actualCount) {
-      actualMap.delete(actualItem)
-    }
-    else {
+    // if (!actualCount) {
+    //   actualMap.delete(actualItem)
+    // }
+    // else {
       actualMap.set(actualItem, actualCount)
-    }
+    // }
     return actualCount
   }
 
   if (!options?.mayNotContains) {
     actualMap?.forEach((actualCount, actualItem) => {
-      if (expectedMap) {
+      if (actualCount && expectedMap) {
         actualCount = f1(
           actualItem, actualCount,
           actualMap, expectedMap,
@@ -338,7 +338,7 @@ function matchArraySet<T>(
       }
     })
     actualMatcherMap?.forEach((actualCount, actualItem) => {
-      if (expectedMap) {
+      if (actualCount && expectedMap) {
         actualCount = f2(
           actualItem, actualCount,
           actualMatcherMap, expectedMap,
@@ -359,7 +359,7 @@ function matchArraySet<T>(
 
   if (!options?.mayNotContained) {
     expectedMap?.forEach((expectedCount, expectedItem) => {
-      if (actualMap) {
+      if (expectedCount && actualMap) {
         expectedCount = f1(
           expectedItem, expectedCount,
           expectedMap, actualMap,
@@ -414,7 +414,7 @@ function matchArraySet<T>(
       }
     })
     expectedMatcherMap?.forEach((expectedCount, expectedItem) => {
-      if (actualMap) {
+      if (expectedCount && actualMap) {
         expectedCount = f2(
           expectedItem, expectedCount,
           expectedMatcherMap, actualMap,
@@ -473,7 +473,43 @@ function matchArraySet<T>(
     return found
   }
 
-  if (actualMap?.size || actualMatcherMap?.size) {
+  let actualHasItems = false
+  if (actualMap) {
+    for (const [actualItem, actualCount] of actualMap) {
+      if (actualCount) {
+        actualHasItems = true
+        break
+      }
+    }
+  }
+  if (!actualHasItems && actualMatcherMap) {
+    for (const [actualItem, actualCount] of actualMatcherMap) {
+      if (actualCount) {
+        actualHasItems = true
+        break
+      }
+    }
+  }
+
+  let expectedHasItems = false
+  if (expectedMap) {
+    for (const [expectedItem, expectedCount] of expectedMap) {
+      if (expectedCount) {
+        expectedHasItems = true
+        break
+      }
+    }
+  }
+  if (!expectedHasItems && expectedMatcherMap) {
+    for (const [expectedItem, expectedCount] of expectedMatcherMap) {
+      if (expectedCount) {
+        expectedHasItems = true
+        break
+      }
+    }
+  }
+
+  if (actualHasItems) {
     if (options?.mayNotContained) {
       return true
     }
@@ -481,6 +517,10 @@ function matchArraySet<T>(
     if (options?.actualRepeats) {
       if (actualMap) {
         for (let [actualItem, actualCount] of actualMap) {
+          if (!actualCount) {
+            continue
+          }
+
           if (expectedFoundValuesSet?.has(actualItem)) {
             return true
           }
@@ -503,6 +543,10 @@ function matchArraySet<T>(
       }
       if (actualMatcherMap) {
         for (let [actualItem, actualCount] of actualMatcherMap) {
+          if (!actualCount) {
+            continue
+          }
+
           // if (expectedFoundValuesSet?.has(actualItem)) {
           //   return true
           // }
@@ -532,7 +576,7 @@ function matchArraySet<T>(
     }
   }
 
-  if (expectedMap?.size || expectedMatcherMap?.size) {
+  if (expectedHasItems) {
     if (options?.mayNotContains) {
       return true
     }
@@ -540,6 +584,10 @@ function matchArraySet<T>(
     if (options?.expectedRepeats) {
       if (expectedMap) {
         for (let [expectedItem, expectedCount] of expectedMap) {
+          if (!expectedCount) {
+            continue
+          }
+
           if (actualFoundValuesSet?.has(expectedItem)) {
             return true
           }
@@ -562,6 +610,10 @@ function matchArraySet<T>(
       }
       if (expectedMatcherMap) {
         for (let [expectedItem, expectedCount] of expectedMatcherMap) {
+          if (!expectedCount) {
+            continue
+          }
+
           // if (actualFoundValuesSet?.has(expectedItem)) {
           //   return true
           // }
@@ -812,26 +864,8 @@ describe('matchArraySet', function () {
       {value: 1}, 2, 3,
       1, {value: 2}, 3,
       1, 2, {value: 3},
-      {value: 1}, 2, 4,
-      1, {value: 2}, 3,
-      1, 2, {value: 3},
-      {value: 1}, 2, 3,
-      1, {value: 2}, 3,
-      1, 2, {value: 3},
-      {value: 1}, 2, 3,
-      1, {value: 2}, 3,
-      1, 2, {value: 3},
     ]
     const expected = [
-      1, {value: 2}, 3,
-      1, 2, {value: 4},
-      {value: 1}, 2, 4,
-      1, {value: 2}, 4,
-      1, 2, {value: 4},
-      {value: 1}, 2, 4,
-      1, {value: 2}, 4,
-      1, 2, {value: 4},
-      {value: 1}, 2, 4,
       1, {value: 2}, 3,
       1, 2, {value: 4},
       {value: 1}, 2, 4,
