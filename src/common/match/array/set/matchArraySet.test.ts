@@ -3,35 +3,10 @@ import {createTestVariants} from '@flemist/test-variants'
 import {calcPerformance} from 'rdtsc'
 import {matchArraySetSimple} from './matchArraySetSimple'
 import {matchArraySetOptimized} from './matchArraySetOptimized'
-import {matchArraySet, shouldUseOptimized} from "src/common/match/array/set/matchArraySet";
-
-function addRepeats(arr: number[], index: number, count: number) {
-  const result = [...arr]
-  for (let i = 0; i < count; i++) {
-    result.splice(index, 0, arr[index])
-  }
-  return result
-}
-
-function addBreaks(arr: number[], index: number, count: number) {
-  const result = [...arr]
-  for (let i = 0; i < count; i++) {
-    result.splice(index, 0, 0)
-  }
-  return result
-}
+import {matchArraySet, shouldUseOptimized} from './matchArraySet'
+import {isMatcher, match} from '../test/helpers'
 
 describe('matchArraySet', function () {
-  function match(actual: any, expected: any) {
-    if (typeof actual === 'object') {
-      actual = actual.value
-    }
-    if (typeof expected === 'object') {
-      expected = expected.value
-    }
-    return actual === expected
-  }
-
   const testVariants = createTestVariants(({
     mathcArraySet,
     actual,
@@ -54,7 +29,7 @@ describe('matchArraySet', function () {
     // console.log(actual)
     // console.log(expected, result)
     // console.log()
-    const resultActual = matchArraySetOptimized(actual, expected, match, {
+    const resultActual = matchArraySetOptimized(actual, expected, isMatcher, match, {
       mayNotContains,
       mayNotContained,
       actualRepeats,
@@ -64,9 +39,9 @@ describe('matchArraySet', function () {
   })
 
   it('simple', async function () {
-    assert.throws(() => matchArraySetSimple([], [], match, {mayNotContains: true, mayNotContained: true}),
+    assert.throws(() => matchArraySetSimple([], [], isMatcher, match, {mayNotContains: true, mayNotContained: true}),
       /At least one of the options 'mayNotContains' or 'mayNotContained' should be false/)
-    assert.throws(() => matchArraySetOptimized([], [], match, {mayNotContains: true, mayNotContained: true}),
+    assert.throws(() => matchArraySetOptimized([], [], isMatcher, match, {mayNotContains: true, mayNotContained: true}),
       /At least one of the options 'mayNotContains' or 'mayNotContained' should be false/)
   })
 
@@ -296,19 +271,19 @@ describe('matchArraySet', function () {
 
       },
       () => {
-        matchArraySetSimple(actual, expected, match, {
+        matchArraySetSimple(actual, expected, isMatcher, match, {
           mayNotContains : true,
           mayNotContained: false,
           actualRepeats  : true,
           expectedRepeats: true,
         })
-        matchArraySetSimple(actual, expected, match, {
+        matchArraySetSimple(actual, expected, isMatcher, match, {
           mayNotContains : false,
           mayNotContained: true,
           actualRepeats  : true,
           expectedRepeats: true,
         })
-        matchArraySetSimple(actual, expected, match, {
+        matchArraySetSimple(actual, expected, isMatcher, match, {
           mayNotContains : false,
           mayNotContained: false,
           actualRepeats  : true,
@@ -316,19 +291,19 @@ describe('matchArraySet', function () {
         })
       },
       () => {
-        matchArraySet(actual, expected, match, {
+        matchArraySet(actual, expected, isMatcher, match, {
           mayNotContains : true,
           mayNotContained: false,
           actualRepeats  : true,
           expectedRepeats: true,
         })
-        matchArraySet(actual, expected, match, {
+        matchArraySet(actual, expected, isMatcher, match, {
           mayNotContains : false,
           mayNotContained: true,
           actualRepeats  : true,
           expectedRepeats: true,
         })
-        matchArraySet(actual, expected, match, {
+        matchArraySet(actual, expected, isMatcher, match, {
           mayNotContains : false,
           mayNotContained: false,
           actualRepeats  : true,

@@ -1,7 +1,9 @@
-import {MatchArraySetOptions} from "./contracts";
+import {MatchArraySetOptions} from './contracts'
 
 export function matchArraySetSimple<T>(
-  actual: T[], expected: T[],
+  actual: T[],
+  expected: T[],
+  isMatcher: (value: any) => boolean,
   match: (actual: T, expected: T) => boolean,
   options: MatchArraySetOptions,
 ): boolean {
@@ -9,10 +11,10 @@ export function matchArraySetSimple<T>(
     throw new Error(`At least one of the options 'mayNotContains' or 'mayNotContained' should be false`)
   }
 
-  let actualValues = actual.slice()
-  let expectedValues = expected.slice()
-  let actualFound = []
-  let expectedFound = []
+  const actualValues = actual.slice()
+  const expectedValues = expected.slice()
+  const actualFound = []
+  const expectedFound = []
 
   if (!options?.mayNotContains) {
     let actualIndex = 0

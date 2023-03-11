@@ -1,6 +1,7 @@
 import {MatchArraySetOptions} from './contracts'
 import {matchArraySetSimple} from './matchArraySetSimple'
 import {matchArraySetOptimized} from './matchArraySetOptimized'
+import {isMatcher} from "src/common/match/array/test/helpers";
 
 export function shouldUseOptimized(
   actual: any[],
@@ -19,7 +20,7 @@ export function shouldUseOptimized(
   let countMatchersActual = 0
   for (let i = 0, len = actual.length; i < len; i++) {
     const actualItem = actual[i]
-    if (typeof actualItem === 'object') {
+    if (isMatcher(actualItem)) {
       countMatchersActual++
     }
   }
@@ -27,7 +28,7 @@ export function shouldUseOptimized(
   let countMatchersExpected = 0
   for (let i = 0, len = expected.length; i < len; i++) {
     const expectedItem = expected[i]
-    if (typeof expectedItem === 'object') {
+    if (isMatcher(expectedItem)) {
       countMatchersExpected++
     }
   }
@@ -46,12 +47,13 @@ export function shouldUseOptimized(
 export function matchArraySet<T>(
   actual: T[],
   expected: T[],
+  isMatcher: (value: any) => boolean,
   match: (actual: T, expected: T) => boolean,
   options: MatchArraySetOptions,
 ): boolean {
   if (shouldUseOptimized(actual, expected, options)) {
-    return matchArraySetOptimized(actual, expected, match, options)
+    return matchArraySetOptimized(actual, expected, isMatcher, match, options)
   }
 
-  return matchArraySetSimple(actual, expected, match, options)
+  return matchArraySetSimple(actual, expected, isMatcher, match, options)
 }
