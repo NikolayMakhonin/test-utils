@@ -1,7 +1,7 @@
 /* eslint-disable array-element-newline */
 import {createTestVariants} from '@flemist/test-variants'
 import {matchArrayMapOptimized} from './matchArrayMapOptimized'
-import {isMatcher, match, getKey} from '../test/helpers'
+import {match, getKey} from '../test/helpers'
 
 describe('matchArrayMap', function () {
   const testVariants = createTestVariants(({
@@ -26,7 +26,7 @@ describe('matchArrayMap', function () {
     // console.log(actual)
     // console.log(expected, result)
     // console.log()
-    const resultActual = matchArrayMapOptimized(actual, expected, isMatcher, getKey, match, {
+    const resultActual = matchArrayMapOptimized(actual, expected, getKey, match, {
       mayNotContains,
       mayNotContained,
       actualRepeats,
@@ -36,7 +36,7 @@ describe('matchArrayMap', function () {
   })
 
   it('simple', async function () {
-    assert.throws(() => matchArrayMapOptimized([], [], isMatcher, getKey, match, {mayNotContains: true, mayNotContained: true}),
+    assert.throws(() => matchArrayMapOptimized([], [], getKey, match, {mayNotContains: true, mayNotContained: true}),
       /At least one of the options 'mayNotContains' or 'mayNotContained' should be false/)
   })
 

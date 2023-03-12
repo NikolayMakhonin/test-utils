@@ -3,7 +3,6 @@ import {MatchArraySetOptions, UNSET} from './contracts'
 export function matchArrayMapOptimized<T>(
   actual: T[],
   expected: T[],
-  isMatcher: (value: any) => boolean,
   getKey: (value: T) => any,
   match: (actual: T, expected: T) => boolean,
   options: MatchArraySetOptions,
