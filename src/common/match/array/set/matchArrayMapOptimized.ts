@@ -1,4 +1,4 @@
-import {MatchArraySetOptions} from './contracts'
+import {MatchArraySetOptions, UNSET} from './contracts'
 
 export function matchArrayMapOptimized<T>(
   actual: T[],
@@ -49,120 +49,57 @@ export function matchArrayMapOptimized<T>(
   let expectedFoundMap: Map<any, T[]>
 
   function f1(
-    actualItem,
-    actualCount,
-    actualMap,
-    expectedMap,
-    actualFoundMatcherSet,
-    expectedFoundMatcherSet,
-    actualFoundMap,
-    expectedFoundMap,
+    actualKey: any,
+    expectedKey: any,
+    actualValues: T[],
+    expectedValues: T[],
   ) {
-    let expectedCount = expectedMap?.get(actualItem)
-    if (expectedCount) {
-      const minCount = Math.min(actualCount, expectedCount)
-      expectedCount -= minCount
-      actualCount -= minCount
-      if (!expectedCount) {
-        expectedMap.delete(actualItem)
-      }
-      else {
-        expectedMap.set(actualItem, expectedCount)
-      }
-      if (typeof actualItem !== 'object') {
-        actualFoundMap.add(actualItem)
-        expectedFoundMap.add(actualItem)
-      }
-    }
-    if (!actualCount) {
-      actualMap.delete(actualItem)
-      return actualCount
-    }
-    actualMap.set(actualItem, actualCount)
-    return actualCount
-  }
-
-  function f2(
-    actualItem,
-    actualCount,
-    actualMap,
-    expectedMap,
-    actualFoundMatcherSet,
-    expectedFoundMatcherSet,
-    actualFoundMap,
-    expectedFoundMap,
-  ) {
-    while (actualCount > 0) {
-      let found = false
-      for (let [expectedItem, expectedCount] of expectedMap) {
-        if (expectedCount > 0 && match(actualItem, expectedItem)) {
-          expectedCount--
-          if (!expectedCount) {
-            expectedMap.delete(expectedItem)
+    if (expectedValues?.length && actualValues?.length) {
+      let actualIndex = 0
+      while (actualIndex < actualValues.length && expectedValues.length > 0) {
+        const actualValue = actualValues[actualIndex]
+        let expectedIndex = 0
+        while (expectedIndex < expectedValues.length) {
+          const expectedValue = expectedValues[expectedIndex]
+          if (match(actualValue, expectedValue)) {
+            actualValues[actualIndex] = actualValues[actualValues.length - 1]
+            actualValues.length--
+            expectedValues[expectedIndex] = expectedValues[expectedValues.length - 1]
+            expectedValues.length--
+            if (actualValues.length === 0) {
+              actualMap.delete(actualKey)
+            }
+            if (expectedValues.length === 0) {
+              expectedMap.delete(expectedKey)
+            }
+            actualFoundMap = addValue(actualFoundMap, actualKey, actualValue)
+            expectedFoundMap = addValue(expectedFoundMap, expectedKey, expectedValue)
+            actualIndex--
+            break
           }
-          else {
-            expectedMap.set(expectedItem, expectedCount)
-          }
-          actualCount--
-          if (isMatcher(actualItem)) {
-            actualFoundMatcherSet.add(actualItem)
-          }
-          else {
-            actualFoundMap.add(actualItem)
-          }
-          if (isMatcher(expectedItem)) {
-            expectedFoundMatcherSet.add(expectedItem)
-          }
-          else {
-            expectedFoundMap.add(expectedItem)
-          }
-          found = true
-          break
+          expectedIndex++
         }
-      }
-      if (!found) {
-        break
+        actualIndex++
       }
     }
-    if (!actualCount) {
-      actualMap.delete(actualItem)
-    }
-    else {
-      actualMap.set(actualItem, actualCount)
-    }
-    return actualCount
   }
 
   if (!options?.mayNotContains && actualMap?.size && expectedMap?.size) {
     actualMap.forEach((actualValues, actualKey) => {
-      const expectedValues = expectedMap.get(actualKey)
-      if (expectedValues?.length) {
-        let actualIndex = 0
-        while (actualIndex < actualValues.length && expectedValues.length > 0) {
-          const actualValue = actualValues[actualIndex]
-          let expectedIndex = 0
-          while (expectedIndex < expectedValues.length) {
-            const expectedValue = expectedValues[expectedIndex]
-            if (match(actualValue, expectedValue)) {
-              actualValues[actualIndex] = actualValues[actualValues.length - 1]
-              actualValues.length--
-              expectedValues[expectedIndex] = expectedValues[expectedValues.length - 1]
-              expectedValues.length--
-              if (actualValues.length === 0) {
-                actualMap.delete(actualKey)
-              }
-              if (expectedValues.length === 0) {
-                expectedMap.delete(actualKey)
-              }
-              actualFoundMap = addValue(actualFoundMap, actualKey, actualValue)
-              expectedFoundMap = addValue(expectedFoundMap, actualKey, expectedValue)
-              break
-            }
-            expectedIndex++
+      if (actualKey === UNSET) {
+        for (const [expectedKey, expectedValues] of expectedMap) {
+          f1(UNSET, expectedKey, actualValues, expectedValues)
+          if (actualValues.length === 0) {
+            break
           }
-          if (expectedIndex === expectedValues.length) {
-            actualIndex++
-          }
+        }
+      }
+      else {
+        let expectedValues = expectedMap.get(actualKey)
+        f1(actualKey, actualKey, actualValues, expectedValues)
+        if (actualValues.length > 0) {
+          expectedValues = expectedMap.get(UNSET)
+          f1(actualKey, UNSET, actualValues, expectedValues)
         }
       }
     })
@@ -170,89 +107,44 @@ export function matchArrayMapOptimized<T>(
 
   if (!options?.mayNotContained && actualMap?.size && expectedMap?.size) {
     expectedMap.forEach((expectedValues, expectedKey) => {
-      const actualValues = actualMap.get(expectedKey)
-      if (actualValues?.length) {
-        let expectedIndex = 0
-        while (expectedIndex < expectedValues.length && actualValues.length > 0) {
-          const expectedValue = expectedValues[expectedIndex]
-          let actualIndex = 0
-          while (actualIndex < actualValues.length) {
-            const actualValue = actualValues[actualIndex]
-            if (match(actualValue, expectedValue)) {
-              expectedValues[expectedIndex] = expectedValues[expectedValues.length - 1]
-              expectedValues.length--
-              actualValues[actualIndex] = actualValues[actualValues.length - 1]
-              actualValues.length--
-              if (actualValues.length === 0) {
-                actualMap.delete(expectedKey)
-              }
-              if (expectedValues.length === 0) {
-                expectedMap.delete(expectedKey)
-              }
-              actualFoundMap = addValue(actualFoundMap, expectedKey, actualValue)
-              expectedFoundMap = addValue(expectedFoundMap, expectedKey, expectedValue)
-              break
-            }
-            actualIndex++
+      if (expectedKey === UNSET) {
+        for (const [actualKey, actualValues] of actualMap) {
+          f1(actualKey, UNSET, actualValues, expectedValues)
+          if (expectedValues.length === 0) {
+            break
           }
-          if (actualIndex === actualValues.length) {
-            expectedIndex++
-          }
+        }
+      }
+      else {
+        let actualValues = actualMap.get(expectedKey)
+        f1(expectedKey, expectedKey, actualValues, expectedValues)
+        if (expectedValues.length > 0) {
+          actualValues = actualMap.get(UNSET)
+          f1(UNSET, expectedKey, actualValues, expectedValues)
         }
       }
     })
   }
 
-  let actualFoundMatcherArray: T[]
-  let expectedFoundMatcherArray: T[]
-  let actualFoundArray: T[]
-  let expectedFoundArray: T[]
-
-  function f4(
-    actualItem,
-    expectedFoundMap,
+  function f2(
+    actualValues: T[],
+    expectedValues: T[],
   ) {
-    let found = false
-    // if (Array.isArray(expectedFoundMap)) {
-    for (let i = 0, len = expectedFoundMap.length; i < len; i++) {
-      const expectedItem = expectedFoundMap[i]
-      if (match(actualItem, expectedItem)) {
-        found = true
-        break
+    for (let i = 0, len = actualValues.length; i < len; i++) {
+      const actualItem = actualValues[i]
+      let found = false
+      for (let j = 0, len = expectedValues.length; j < len; j++) {
+        const expectedItem = expectedValues[j]
+        if (match(actualItem, expectedItem)) {
+          found = true
+          break
+        }
+      }
+      if (!found) {
+        return false
       }
     }
-    // }
-    // else {
-    //   for (const expectedItem of expectedFoundMap) {
-    //     if (match(actualItem, expectedItem)) {
-    //       found = true
-    //       break
-    //     }
-    //   }
-    // }
-    return found
-  }
-
-  function f3(
-    actualItem,
-    actualFoundMatcherSet,
-    expectedFoundMatcherSet,
-    actualFoundMap,
-    expectedFoundMap,
-  ) {
-    if (expectedFoundMap?.has(actualItem)) {
-      return true
-    }
-
-    let found = false
-    if (isMatcher(actualItem) && expectedFoundMap) {
-      found = f4(actualItem, expectedFoundMap)
-    }
-    if (!found && expectedFoundMatcherSet) {
-      found = f4(actualItem, expectedFoundMatcherSet)
-    }
-
-    return found
+    return true
   }
 
   if (actualMap?.size) {
@@ -263,19 +155,28 @@ export function matchArrayMapOptimized<T>(
     if (options?.actualRepeats) {
       if (actualMap) {
         for (const [actualKey, actualValues] of actualMap) {
-          const expectedValues = expectedFoundMap?.get(actualKey)
-          if (!expectedValues) {
-            return false
-          }
-
-          for (let i = 0, len = actualValues.length; i < len; i++) {
-            const actualItem = actualValues[i]
+          if (actualKey === UNSET) {
             let found = false
-            for (let j = 0, len = expectedValues.length; j < len; j++) {
-              const expectedItem = expectedValues[j]
-              if (match(actualItem, expectedItem)) {
+            for (const [, expectedValues] of expectedFoundMap) {
+              if (f2(actualValues, expectedValues)) {
                 found = true
                 break
+              }
+            }
+            if (!found) {
+              return false
+            }
+          }
+          else {
+            let expectedValues = expectedFoundMap?.get(actualKey)
+            let found = false
+            if (expectedValues && f2(actualValues, expectedValues)) {
+              found = true
+            }
+            if (!found) {
+              expectedValues = expectedFoundMap?.get(UNSET)
+              if (expectedValues && f2(actualValues, expectedValues)) {
+                found = true
               }
             }
             if (!found) {
@@ -298,19 +199,28 @@ export function matchArrayMapOptimized<T>(
     if (options?.expectedRepeats) {
       if (expectedMap) {
         for (const [expectedKey, expectedValues] of expectedMap) {
-          const actualValues = actualFoundMap?.get(expectedKey)
-          if (!actualValues) {
-            return false
-          }
-
-          for (let i = 0, len = expectedValues.length; i < len; i++) {
-            const expectedItem = expectedValues[i]
+          if (expectedKey === UNSET) {
             let found = false
-            for (let j = 0, len = actualValues.length; j < len; j++) {
-              const actualItem = actualValues[j]
-              if (match(actualItem, expectedItem)) {
+            for (const [, actualValues] of actualFoundMap) {
+              if (f2(expectedValues, actualValues)) {
                 found = true
                 break
+              }
+            }
+            if (!found) {
+              return false
+            }
+          }
+          else {
+            let actualValues = actualFoundMap?.get(expectedKey)
+            let found = false
+            if (actualValues && f2(expectedValues, actualValues)) {
+              found = true
+            }
+            if (!found) {
+              actualValues = actualFoundMap?.get(UNSET)
+              if (actualValues && f2(expectedValues, actualValues)) {
+                found = true
               }
             }
             if (!found) {

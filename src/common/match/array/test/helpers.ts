@@ -1,10 +1,12 @@
+import {UNSET} from "src/common/match/array/set/contracts";
+
 export function isMatcher(value: any): boolean {
   return typeof value === 'object'
 }
 
 export function getKey(value: any): any {
   if (isMatcher(value)) {
-    return null
+    return UNSET
   }
   return value
 }
