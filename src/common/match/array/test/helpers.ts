@@ -2,6 +2,13 @@ export function isMatcher(value: any): boolean {
   return typeof value === 'object'
 }
 
+export function getKey(value: any): any {
+  if (isMatcher(value)) {
+    return null
+  }
+  return value
+}
+
 export function match(actual: any, expected: any): boolean {
   if (isMatcher(actual)) {
     actual = actual.value
