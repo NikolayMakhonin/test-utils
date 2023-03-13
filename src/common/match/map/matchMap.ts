@@ -13,12 +13,12 @@ export function matchMap<T>(
         return false
       }
     }
-    else if (options?.mayNotContained) {
+    else if (!options?.mayNotContained) {
       return false
     }
   }
 
-  if (options?.mayNotContains) {
+  if (!options?.mayNotContains) {
     for (const [expectedKey] of expected) {
       if (!actual.has(expectedKey)) {
         return false

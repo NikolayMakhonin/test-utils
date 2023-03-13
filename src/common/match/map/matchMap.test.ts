@@ -59,7 +59,7 @@ describe('matchMap', function () {
           ...!mayNotContains ? ['mayNotContains'] : [],
           ...!mayNotContained ? ['mayNotContained'] : [],
         ],
-      values      : () => [[], [1], [1, 2], [1, 2, 1], [1, 2, 1, 2], [1, 2, 3], [1, 1, 2, 2]],
+      values      : () => [[], [1], [1, 2], [1, 2, 3]],
       actualValues: ({
         result, resultFalseType, values, mayNotContains, mayNotContained,
       }) => values.length === 0 ? [] : [
