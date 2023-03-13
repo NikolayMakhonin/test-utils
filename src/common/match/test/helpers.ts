@@ -1,4 +1,4 @@
-import {UNSET} from "src/common/match/array/set/contracts";
+import {ANY} from 'src/common/match/contracts'
 
 export function isMatcher(value: any): boolean {
   return typeof value === 'object'
@@ -6,7 +6,14 @@ export function isMatcher(value: any): boolean {
 
 export function getKey(value: any): any {
   if (isMatcher(value)) {
-    return UNSET
+    return ANY
+  }
+  return value
+}
+
+export function getValue(value: any): number {
+  if (isMatcher(value)) {
+    return value.value
   }
   return value
 }

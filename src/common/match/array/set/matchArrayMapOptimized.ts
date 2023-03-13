@@ -1,4 +1,5 @@
-import {MatchArraySetOptions, UNSET} from './contracts'
+import {MatchArraySetOptions} from './contracts'
+import {ANY} from "src/common/match/contracts";
 
 export function matchArrayMapOptimized<T>(
   actual: T[],
@@ -85,9 +86,9 @@ export function matchArrayMapOptimized<T>(
 
   if (!options?.mayNotContains && actualMap?.size && expectedMap?.size) {
     actualMap.forEach((actualValues, actualKey) => {
-      if (actualKey === UNSET) {
+      if (actualKey === ANY) {
         for (const [expectedKey, expectedValues] of expectedMap) {
-          f1(UNSET, expectedKey, actualValues, expectedValues)
+          f1(ANY, expectedKey, actualValues, expectedValues)
           if (actualValues.length === 0) {
             break
           }
@@ -97,8 +98,8 @@ export function matchArrayMapOptimized<T>(
         let expectedValues = expectedMap.get(actualKey)
         f1(actualKey, actualKey, actualValues, expectedValues)
         if (actualValues.length > 0) {
-          expectedValues = expectedMap.get(UNSET)
-          f1(actualKey, UNSET, actualValues, expectedValues)
+          expectedValues = expectedMap.get(ANY)
+          f1(actualKey, ANY, actualValues, expectedValues)
         }
       }
     })
@@ -106,9 +107,9 @@ export function matchArrayMapOptimized<T>(
 
   if (!options?.mayNotContained && actualMap?.size && expectedMap?.size) {
     expectedMap.forEach((expectedValues, expectedKey) => {
-      if (expectedKey === UNSET) {
+      if (expectedKey === ANY) {
         for (const [actualKey, actualValues] of actualMap) {
-          f1(actualKey, UNSET, actualValues, expectedValues)
+          f1(actualKey, ANY, actualValues, expectedValues)
           if (expectedValues.length === 0) {
             break
           }
@@ -118,8 +119,8 @@ export function matchArrayMapOptimized<T>(
         let actualValues = actualMap.get(expectedKey)
         f1(expectedKey, expectedKey, actualValues, expectedValues)
         if (expectedValues.length > 0) {
-          actualValues = actualMap.get(UNSET)
-          f1(UNSET, expectedKey, actualValues, expectedValues)
+          actualValues = actualMap.get(ANY)
+          f1(ANY, expectedKey, actualValues, expectedValues)
         }
       }
     })
@@ -154,7 +155,7 @@ export function matchArrayMapOptimized<T>(
     if (options?.actualRepeats) {
       if (actualMap) {
         for (const [actualKey, actualValues] of actualMap) {
-          if (actualKey === UNSET) {
+          if (actualKey === ANY) {
             let found = false
             for (const [, expectedValues] of expectedFoundMap) {
               if (f2(actualValues, expectedValues)) {
@@ -173,7 +174,7 @@ export function matchArrayMapOptimized<T>(
               found = true
             }
             if (!found) {
-              expectedValues = expectedFoundMap?.get(UNSET)
+              expectedValues = expectedFoundMap?.get(ANY)
               if (expectedValues && f2(actualValues, expectedValues)) {
                 found = true
               }
@@ -198,7 +199,7 @@ export function matchArrayMapOptimized<T>(
     if (options?.expectedRepeats) {
       if (expectedMap) {
         for (const [expectedKey, expectedValues] of expectedMap) {
-          if (expectedKey === UNSET) {
+          if (expectedKey === ANY) {
             let found = false
             for (const [, actualValues] of actualFoundMap) {
               if (f2(expectedValues, actualValues)) {
@@ -217,7 +218,7 @@ export function matchArrayMapOptimized<T>(
               found = true
             }
             if (!found) {
-              actualValues = actualFoundMap?.get(UNSET)
+              actualValues = actualFoundMap?.get(ANY)
               if (actualValues && f2(expectedValues, actualValues)) {
                 found = true
               }

@@ -2,7 +2,7 @@
 import {calcPerformance} from 'rdtsc'
 import {matchArraySetSimple} from './matchArraySetSimple'
 import {matchArraySet, shouldUseOptimized} from './matchArraySet'
-import {getKey, isMatcher, match} from '../test/helpers'
+import {getKey, isMatcher, match} from '../../test/helpers'
 import {matchArrayMapOptimized} from "src/common/match/array/set/matchArrayMapOptimized";
 
 describe('matchArray', function () {

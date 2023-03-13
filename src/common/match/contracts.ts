@@ -174,3 +174,5 @@ export type ToExpectedDeep<T, Async extends boolean = boolean> =
 //     () => `array containing ${count} items ${item}`,
 //   )
 // }
+
+export const ANY = Symbol('ANY')

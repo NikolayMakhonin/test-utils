@@ -5,4 +5,3 @@ export type MatchArraySetOptions = {
   expectedRepeats?: boolean
 }
 
-export const UNSET = Symbol('UNSET')

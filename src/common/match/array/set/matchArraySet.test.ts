@@ -4,11 +4,11 @@ import {calcPerformance} from 'rdtsc'
 import {matchArraySetSimple} from './matchArraySetSimple'
 import {matchArraySetOptimized} from './matchArraySetOptimized'
 import {matchArraySet, shouldUseOptimized} from './matchArraySet'
-import {isMatcher, match} from '../test/helpers'
+import {isMatcher, match} from '../../test/helpers'
 
 describe('matchArraySet', function () {
   const testVariants = createTestVariants(({
-    mathcArraySet,
+    matchFunc,
     actual,
     expected,
     result,
@@ -17,7 +17,7 @@ describe('matchArraySet', function () {
     actualRepeats,
     expectedRepeats,
   }: {
-    mathcArraySet: typeof matchArraySetOptimized
+    matchFunc: typeof matchArraySetOptimized
     actual: any[]
     expected: any[]
     result: boolean
@@ -57,7 +57,7 @@ describe('matchArraySet', function () {
       mayNotContainedValues: number[]
       expectedShuffle: number[]
     }>({
-      mathcArraySet  : [matchArraySetSimple, matchArraySetOptimized],
+      matchFunc      : [matchArraySetSimple, matchArraySetOptimized],
       result         : [true, false],
       mayNotContains : [false, true],
       mayNotContained: ({mayNotContains}) => mayNotContains ? [false] : [false, true],

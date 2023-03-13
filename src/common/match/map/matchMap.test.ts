@@ -1,9 +1,9 @@
 /* eslint-disable array-element-newline */
 import {createTestVariants} from '@flemist/test-variants'
-import {matchArrayMapOptimized} from './matchArrayMapOptimized'
-import {match, getKey} from '../../test/helpers'
+import {matchMap} from './matchMap'
+import {getValue, match} from '../test/helpers'
 
-describe('matchArrayMap', function () {
+describe('matchMap', function () {
   const testVariants = createTestVariants(({
     matchFunc,
     actual,
@@ -11,33 +11,26 @@ describe('matchArrayMap', function () {
     result,
     mayNotContains,
     mayNotContained,
-    actualRepeats,
-    expectedRepeats,
   }: {
-    matchFunc: typeof matchArrayMapOptimized
-    actual: any[]
-    expected: any[]
+    matchFunc: typeof matchMap
+    actual: Map<any, any>
+    expected: Map<any, any>
     result: boolean
     mayNotContains?: boolean
     mayNotContained?: boolean
-    actualRepeats?: boolean
-    expectedRepeats?: boolean
   }) => {
     // console.log(actual)
     // console.log(expected, result)
     // console.log()
-    const resultActual = matchArrayMapOptimized(actual, expected, getKey, match, {
+    const resultActual = matchMap(actual, expected, match, {
       mayNotContains,
       mayNotContained,
-      actualRepeats,
-      expectedRepeats,
     })
     assert.strictEqual(resultActual, result)
   })
 
   it('simple', async function () {
-    assert.throws(() => matchArrayMapOptimized([], [], getKey, match, {mayNotContains: true, mayNotContained: true}),
-      /At least one of the options 'mayNotContains' or 'mayNotContained' should be false/)
+
   })
 
   it('variants', async function () {
@@ -46,22 +39,18 @@ describe('matchArrayMap', function () {
       values: number[]
       actualValues: number[]
       expectedValues: number[]
-      actualRepeatsValues: number[]
-      expectedRepeatsValues: number[]
       mayNotContainsValues: number[]
       mayNotContainedValues: number[]
-      expectedShuffle: number[]
+      actualMatchers: any[]
+      expectedMatchers: any[]
     }>({
-      matchFunc      : [matchArrayMapOptimized],
+      matchFunc      : [matchMap],
       result         : [true, false],
       mayNotContains : [false, true],
       mayNotContained: ({mayNotContains}) => mayNotContains ? [false] : [false, true],
-      actualRepeats  : [false, true],
-      expectedRepeats: [false, true],
       resultFalseType: ({
         result,
         mayNotContains, mayNotContained,
-        actualRepeats, expectedRepeats,
       }) => result
         ? ['']
         : [
@@ -69,12 +58,10 @@ describe('matchArrayMap', function () {
           'expected',
           ...!mayNotContains ? ['mayNotContains'] : [],
           ...!mayNotContained ? ['mayNotContained'] : [],
-          ...!actualRepeats ? ['actualRepeats'] : [],
-          ...!expectedRepeats ? ['expectedRepeats'] : [],
         ],
       values      : () => [[], [1], [1, 2], [1, 2, 1], [1, 2, 1, 2], [1, 2, 3], [1, 1, 2, 2]],
       actualValues: ({
-        result, resultFalseType, values, mayNotContains, mayNotContained, expectedRepeats,
+        result, resultFalseType, values, mayNotContains, mayNotContained,
       }) => values.length === 0 ? [] : [
         ...!result && resultFalseType === 'actual'
           ? [
@@ -84,7 +71,7 @@ describe('matchArrayMap', function () {
                 values.filter(o => o !== values[values.length - 1]),
               ]
               : [],
-            ...values.length > 1 && !mayNotContains && !expectedRepeats
+            ...values.length > 1 && !mayNotContains
               ? [
                 values.slice(1),
                 values.slice(0, values.length - 1),
@@ -93,22 +80,8 @@ describe('matchArrayMap', function () {
           ]
           : [values],
       ],
-      actualRepeatsValues: ({
-        result, resultFalseType, mayNotContains, mayNotContained, actualValues: values, actualRepeats,
-      }) => [
-        ...result || resultFalseType !== 'actualRepeats'
-          ? [values]
-          : [],
-        ...resultFalseType === 'actualRepeats' && !mayNotContained
-          || result && actualRepeats && values.length > 0
-          ? [
-            [values[values.length - 1], ...values],
-            [...values, values[0]],
-          ]
-          : [],
-      ],
       mayNotContainedValues: ({
-        result, resultFalseType, mayNotContains, mayNotContained, actualRepeatsValues: values, expectedRepeats,
+        result, resultFalseType, mayNotContains, mayNotContained, actualValues: values,
       }) => [
         ...result || resultFalseType !== 'mayNotContained'
           ? [values]
@@ -121,7 +94,7 @@ describe('matchArrayMap', function () {
           : [],
       ],
       expectedValues: ({
-        result, resultFalseType, values, mayNotContains, mayNotContained, actualRepeats,
+        result, resultFalseType, values, mayNotContains, mayNotContained,
       }) => values.length === 0 ? [] : [
         ...!result && resultFalseType === 'expected'
           ? [
@@ -131,7 +104,7 @@ describe('matchArrayMap', function () {
                 values.filter(o => o !== values[values.length - 1]),
               ]
               : [],
-            ...values.length > 1 && !mayNotContained && !actualRepeats
+            ...values.length > 1 && !mayNotContained
               ? [
                 values.slice(1),
                 values.slice(0, values.length - 1),
@@ -140,22 +113,8 @@ describe('matchArrayMap', function () {
           ]
           : [values],
       ],
-      expectedRepeatsValues: ({
-        result, resultFalseType, mayNotContains, mayNotContained, expectedValues: values, expectedRepeats,
-      }) => [
-        ...result || resultFalseType !== 'expectedRepeats'
-          ? [values]
-          : [],
-        ...resultFalseType === 'expectedRepeats' && !mayNotContains
-          || result && expectedRepeats && values.length > 0
-          ? [
-            [values[values.length - 1], ...values],
-            [...values, values[0]],
-          ]
-          : [],
-      ],
       mayNotContainsValues: ({
-        result, resultFalseType, mayNotContains, mayNotContained, expectedRepeatsValues: values, expectedRepeats,
+        result, resultFalseType, mayNotContains, mayNotContained, expectedValues: values,
       }) => [
         ...result || resultFalseType !== 'mayNotContains'
           ? [values]
@@ -167,22 +126,23 @@ describe('matchArrayMap', function () {
           ]
           : [],
       ],
-      expectedShuffle: ({mayNotContainsValues: values}) => [
-        values,
-        values.reverse(),
-        values.sort((a, b) => Math.random() - 0.5),
-      ],
-      actual: ({mayNotContainedValues: values}) => [
+      actualMatchers: ({mayNotContainedValues: values}) => [
         values,
         values.map((o, i) => i % 2 === 0 ? o : {value: o}),
         values.map((o, i) => i % 2 !== 0 ? o : {value: o}),
         values.map(o => ({value: o})),
       ],
-      expected: ({mayNotContainsValues: values}) => [
+      expectedMatchers: ({mayNotContainsValues: values}) => [
         values,
         values.map((o, i) => i % 2 === 0 ? o : {value: o}),
         values.map((o, i) => i % 2 !== 0 ? o : {value: o}),
         values.map(o => ({value: o})),
+      ],
+      actual: ({actualMatchers: values}) => [
+        new Map(values.map((o) => [getValue(o), o])),
+      ],
+      expected: ({expectedMatchers: values}) => [
+        new Map(values.map((o) => [getValue(o), o])),
       ],
     })()
   })
