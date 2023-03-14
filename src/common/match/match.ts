@@ -1,13 +1,8 @@
-import type {
-  MatchResult3,
-  MatchResult,
-  Expected,
-  ExpectedSync,
-  PromiseLikeOrValue,
-} from './contracts'
+import type {Expected, ExpectedSync, MatchResult, MatchResult3, PromiseLikeOrValue} from './contracts'
 import {Matcher} from './Matcher'
 import {isPromiseLike} from '@flemist/async-utils'
 import {MatchInternalError} from './MatchInternalError'
+import {isSyncMatcher} from './helpers'
 
 function validateMatchResult<T>(_result: MatchResult<T>): MatchResult<T> {
   const {
@@ -158,7 +153,7 @@ export function matchAsync<T>(actual: T, expected: Expected<T>): PromiseLikeOrVa
 export function match<T>(actual: T, expected: Expected<T, false>): MatchResult<T>
 export function match<T>(actual: T, expected: Expected<T, true>): PromiseLikeOrValue<MatchResult<T>>
 export function match<T>(actual: T, expected: Expected<T>): PromiseLikeOrValue<MatchResult<T>> {
-  return expected instanceof Matcher && expected.async !== false
-    ? matchAsync(actual, expected)
-    : matchSync(actual, expected)
+  return isSyncMatcher(expected)
+    ? matchSync(actual, expected)
+    : matchAsync(actual, expected)
 }

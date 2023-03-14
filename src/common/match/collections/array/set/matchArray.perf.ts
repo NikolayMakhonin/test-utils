@@ -1,9 +1,9 @@
 /* eslint-disable array-element-newline */
 import {calcPerformance} from 'rdtsc'
 import {matchArraySetSimple} from './matchArraySetSimple'
-import {matchArraySet, shouldUseOptimized} from './matchArraySet'
+import {matchArraySet} from './matchArraySet'
 import {getKey, isMatcher, match} from '../../../test/helpers'
-import {matchArrayMapOptimized} from "src/common/match/collections/array/set/matchArrayMapOptimized";
+import {matchArrayMapOptimized} from './matchArrayMapOptimized'
 
 describe('matchArray', function () {
   it('perf', function () {

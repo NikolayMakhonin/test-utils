@@ -1,5 +1,5 @@
 import {MatchArraySetOptions} from './contracts'
-import {ANY} from "src/common/match/contracts";
+import {ANY} from 'src/common/match/contracts'
 
 export function matchArrayMapOptimized<T>(
   actual: T[],

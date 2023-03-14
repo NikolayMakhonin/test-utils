@@ -1,5 +1,5 @@
-import {ExpectedAsync, ExpectedSync, MatchResult, PromiseLikeOrValue} from 'src/common/match/contracts'
-import {matchAsync, matchSync} from 'src/common/match/match'
+import {ExpectedAsync, ExpectedSync, MatchResult, PromiseLikeOrValue} from './contracts'
+import {matchAsync, matchSync} from './match'
 
 export function match<T>(actual: T) {
   function _matchSync(expected: ExpectedSync<T>): MatchResult<T> {
