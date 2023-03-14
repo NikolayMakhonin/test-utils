@@ -153,35 +153,36 @@ export function matchArrayMapOptimized<T>(
     }
 
     if (options?.actualRepeats) {
-      if (actualMap) {
-        for (const [actualKey, actualValues] of actualMap) {
-          if (actualKey === ANY) {
-            let found = false
-            for (const [, expectedValues] of expectedFoundMap) {
-              if (f2(actualValues, expectedValues)) {
-                found = true
-                break
-              }
-            }
-            if (!found) {
-              return false
+      if (!expectedFoundMap) {
+        return false
+      }
+      for (const [actualKey, actualValues] of actualMap) {
+        if (actualKey === ANY) {
+          let found = false
+          for (const [, expectedValues] of expectedFoundMap) {
+            if (f2(actualValues, expectedValues)) {
+              found = true
+              break
             }
           }
-          else {
-            let expectedValues = expectedFoundMap?.get(actualKey)
-            let found = false
+          if (!found) {
+            return false
+          }
+        }
+        else {
+          let expectedValues = expectedFoundMap?.get(actualKey)
+          let found = false
+          if (expectedValues && f2(actualValues, expectedValues)) {
+            found = true
+          }
+          if (!found) {
+            expectedValues = expectedFoundMap?.get(ANY)
             if (expectedValues && f2(actualValues, expectedValues)) {
               found = true
             }
-            if (!found) {
-              expectedValues = expectedFoundMap?.get(ANY)
-              if (expectedValues && f2(actualValues, expectedValues)) {
-                found = true
-              }
-            }
-            if (!found) {
-              return false
-            }
+          }
+          if (!found) {
+            return false
           }
         }
       }
@@ -197,35 +198,36 @@ export function matchArrayMapOptimized<T>(
     }
 
     if (options?.expectedRepeats) {
-      if (expectedMap) {
-        for (const [expectedKey, expectedValues] of expectedMap) {
-          if (expectedKey === ANY) {
-            let found = false
-            for (const [, actualValues] of actualFoundMap) {
-              if (f2(expectedValues, actualValues)) {
-                found = true
-                break
-              }
-            }
-            if (!found) {
-              return false
+      if (!actualFoundMap) {
+        return false
+      }
+      for (const [expectedKey, expectedValues] of expectedMap) {
+        if (expectedKey === ANY) {
+          let found = false
+          for (const [, actualValues] of actualFoundMap) {
+            if (f2(expectedValues, actualValues)) {
+              found = true
+              break
             }
           }
-          else {
-            let actualValues = actualFoundMap?.get(expectedKey)
-            let found = false
+          if (!found) {
+            return false
+          }
+        }
+        else {
+          let actualValues = actualFoundMap?.get(expectedKey)
+          let found = false
+          if (actualValues && f2(expectedValues, actualValues)) {
+            found = true
+          }
+          if (!found) {
+            actualValues = actualFoundMap?.get(ANY)
             if (actualValues && f2(expectedValues, actualValues)) {
               found = true
             }
-            if (!found) {
-              actualValues = actualFoundMap?.get(ANY)
-              if (actualValues && f2(expectedValues, actualValues)) {
-                found = true
-              }
-            }
-            if (!found) {
-              return false
-            }
+          }
+          if (!found) {
+            return false
           }
         }
       }

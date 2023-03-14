@@ -1,9 +1,26 @@
 /* eslint-disable array-element-newline */
 import {createTestVariants} from '@flemist/test-variants'
 import {matchArrayMapOptimized} from './matchArrayMapOptimized'
-import {match, getKey} from '../../../test/helpers'
+import {match, getKey, getValue} from '../../../test/helpers'
+
+function _getKey(value: any) {
+  if (Array.isArray(value)) {
+    value = value[0]
+  }
+  return getKey(value)
+}
+
+function _match(actual: any, expected: any) {
+  const actualKey = Array.isArray(actual) ? actual[0] : actual
+  const actualValue = Array.isArray(actual) ? actual[1] : actual
+  const expectedKey = Array.isArray(expected) ? expected[0] : expected
+  const expectedValue = Array.isArray(expected) ? expected[1] : expected
+  return match(actualKey, expectedKey) && match(actualValue, expectedValue)
+}
 
 describe('matchArrayMap', function () {
+  this.timeout(30000)
+
   const testVariants = createTestVariants(({
     matchFunc,
     actual,
@@ -26,7 +43,7 @@ describe('matchArrayMap', function () {
     // console.log(actual)
     // console.log(expected, result)
     // console.log()
-    const resultActual = matchArrayMapOptimized(actual, expected, getKey, match, {
+    const resultActual = matchArrayMapOptimized(actual, expected, _getKey, _match, {
       mayNotContains,
       mayNotContained,
       actualRepeats,
@@ -51,6 +68,10 @@ describe('matchArrayMap', function () {
       mayNotContainsValues: number[]
       mayNotContainedValues: number[]
       expectedShuffle: number[]
+      actualEntries: any[]
+      expectedEntries: any[]
+      actualMatchers: any[]
+      expectedMatchers: any[]
     }>({
       matchFunc      : [matchArrayMapOptimized],
       result         : [true, false],
@@ -67,6 +88,7 @@ describe('matchArrayMap', function () {
         : [
           'actual',
           'expected',
+          'expectedValue',
           ...!mayNotContains ? ['mayNotContains'] : [],
           ...!mayNotContained ? ['mayNotContained'] : [],
           ...!actualRepeats ? ['actualRepeats'] : [],
@@ -172,17 +194,58 @@ describe('matchArrayMap', function () {
         values.reverse(),
         values.sort((a, b) => Math.random() - 0.5),
       ],
-      actual: ({mayNotContainedValues: values}) => [
+      actualEntries: ({mayNotContainedValues: values}) => [
         values,
-        values.map((o, i) => i % 2 === 0 ? o : {value: o}),
-        values.map((o, i) => i % 2 !== 0 ? o : {value: o}),
-        values.map(o => ({value: o})),
+        values.map((o) => [getValue(o), o]),
       ],
-      expected: ({mayNotContainsValues: values}) => [
+      expectedEntries: ({expectedShuffle: values, resultFalseType, mayNotContained, actualRepeats}) => [
+        ...resultFalseType === 'expectedValue' ? [
+          ...values.length > 1 && !mayNotContained
+            ? [
+              values.map<[number, any]>((o, i) => [getValue(o), o === values[0] ? o + '' : o]),
+              values.map<[number, any]>((o, i) => [getValue(o), o === values[values.length - 1] ? o + '' : o]),
+            ]
+            : [],
+          ...values.length > 1 && !mayNotContained && !actualRepeats
+            ? [
+              values.map<[number, any]>((o, i) => [getValue(o), i === 0 ? o + '' : o]),
+              values.map<[number, any]>((o, i) => [getValue(o), i === values.length - 1 ? o + '' : o]),
+            ]
+            : [],
+        ] : [
+          values,
+          values.map<[number, any]>((o) => [getValue(o), o]),
+        ],
+      ],
+      actualMatchers: ({actualEntries: values}) => [
         values,
-        values.map((o, i) => i % 2 === 0 ? o : {value: o}),
-        values.map((o, i) => i % 2 !== 0 ? o : {value: o}),
-        values.map(o => ({value: o})),
+        values.map((o, i) => Array.isArray(o)
+          ? [o[0], i % 2 === 0 ? o[1] : {value: o[1]}]
+          : i % 2 === 0 ? o : {value: o}),
+        values.map((o, i) => Array.isArray(o)
+          ? [o[0], i % 2 !== 0 ? o[1] : {value: o[1]}]
+          : i % 2 !== 0 ? o : {value: o}),
+        values.map(o => Array.isArray(o)
+          ? [o[0], {value: o[1]}]
+          : {value: o}),
+      ],
+      expectedMatchers: ({expectedEntries: values}) => [
+        values,
+        values.map((o, i) => Array.isArray(o)
+          ? [o[0], i % 2 === 0 ? o[1] : {value: o[1]}]
+          : i % 2 === 0 ? o : {value: o}),
+        values.map((o, i) => Array.isArray(o)
+          ? [o[0], i % 2 !== 0 ? o[1] : {value: o[1]}]
+          : i % 2 !== 0 ? o : {value: o}),
+        values.map(o => Array.isArray(o)
+          ? [o[0], {value: o[1]}]
+          : {value: o}),
+      ],
+      actual: ({actualMatchers: values}) => [
+        values,
+      ],
+      expected: ({expectedMatchers: values, resultFalseType}) => [
+        values,
       ],
     })()
   })
