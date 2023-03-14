@@ -57,10 +57,10 @@ export class MatcherIterator<
 
             return {
               result: false,
-              cause: `actual iterator (index=${indexActual}) is done before expected iterator (index=${indexExpected})`,
+              cause : `actual iterator (index=${indexActual}) is done before expected iterator (index=${indexExpected})`,
               nested: [
                 {
-                  key: indexActual,
+                  key   : indexActual,
                   result: createMatchResultSync(
                     void 0,
                     expectedIteratorResult.value,
@@ -79,10 +79,10 @@ export class MatcherIterator<
 
             return {
               result: false,
-              cause: `actual iterator (index=${indexActual}) is not done when expected iterator (index=${indexExpected}) is done`,
+              cause : `actual iterator (index=${indexActual}) is not done when expected iterator (index=${indexExpected}) is done`,
               nested: [
                 {
-                  key: indexActual,
+                  key   : indexActual,
                   result: createMatchResultSync(
                     actualIteratorResult.value,
                     void 0,
@@ -135,33 +135,31 @@ export class MatcherIterator<
             }
           }
         }
-        else {
-          if (TODO4) {
-            indexActual++
-            actualIteratorResultPromise = actual.next()
-            actualIteratorResult = isPromiseLike(actualIteratorResultPromise)
-              ? await actualIteratorResultPromise
-              : actualIteratorResultPromise
-            continue
-          }
-          else if (TODO5) {
-            indexExpected++
-            expectedIteratorResultPromise = this._expected.next()
-            expectedIteratorResult = isPromiseLike(expectedIteratorResultPromise)
-              ? await expectedIteratorResultPromise
-              : expectedIteratorResultPromise
-            continue
-          }
-          else if (TODO6) {
-            return {
-              result: false,
-              nested: [
-                {
-                  key   : indexActual,
-                  result: matchResult,
-                },
-              ],
-            }
+        else if (TODO4) {
+          indexActual++
+          actualIteratorResultPromise = actual.next()
+          actualIteratorResult = isPromiseLike(actualIteratorResultPromise)
+            ? await actualIteratorResultPromise
+            : actualIteratorResultPromise
+          continue
+        }
+        else if (TODO5) {
+          indexExpected++
+          expectedIteratorResultPromise = this._expected.next()
+          expectedIteratorResult = isPromiseLike(expectedIteratorResultPromise)
+            ? await expectedIteratorResultPromise
+            : expectedIteratorResultPromise
+          continue
+        }
+        else if (TODO6) {
+          return {
+            result: false,
+            nested: [
+              {
+                key   : indexActual,
+                result: matchResult,
+              },
+            ],
           }
         }
 

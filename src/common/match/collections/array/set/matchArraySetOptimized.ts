@@ -377,28 +377,6 @@ export function matchArraySetOptimized<T>(
     return found
   }
 
-  function f3(
-    actualItem,
-    actualFoundMatcherSet,
-    expectedFoundMatcherSet,
-    actualFoundValuesSet,
-    expectedFoundValuesSet,
-  ) {
-    if (expectedFoundValuesSet?.has(actualItem)) {
-      return true
-    }
-
-    let found = false
-    if (isMatcher(actualItem) && expectedFoundValuesSet) {
-      found = f4(actualItem, expectedFoundValuesSet)
-    }
-    if (!found && expectedFoundMatcherSet) {
-      found = f4(actualItem, expectedFoundMatcherSet)
-    }
-
-    return found
-  }
-
   if (actualMap?.size || actualMatcherMap?.size) {
     if (options?.mayNotContained) {
       return true
@@ -428,7 +406,7 @@ export function matchArraySetOptimized<T>(
         }
       }
       if (actualMatcherMap) {
-        for (const [actualItem, actualCount] of actualMatcherMap) {
+        for (const [actualItem] of actualMatcherMap) {
           // if (expectedFoundValuesSet?.has(actualItem)) {
           //   break
           // }
@@ -487,7 +465,7 @@ export function matchArraySetOptimized<T>(
         }
       }
       if (expectedMatcherMap) {
-        for (const [expectedItem, expectedCount] of expectedMatcherMap) {
+        for (const [expectedItem] of expectedMatcherMap) {
           // if (actualFoundValuesSet?.has(expectedItem)) {
           //   break
           // }
