@@ -41,8 +41,10 @@ describe('matchMap', function () {
       expectedValues: number[]
       mayNotContainsValues: number[]
       mayNotContainedValues: number[]
-      actualMatchers: any[]
-      expectedMatchers: any[]
+      actualEntries: [number, any][]
+      expectedEntries: [number, any][]
+      actualMatchers: [number, any][]
+      expectedMatchers: [number, any][]
     }>({
       matchFunc      : [matchMap],
       result         : [true, false],
@@ -56,6 +58,7 @@ describe('matchMap', function () {
         : [
           'actual',
           'expected',
+          'expectedValue',
           ...!mayNotContains ? ['mayNotContains'] : [],
           ...!mayNotContained ? ['mayNotContained'] : [],
         ],
@@ -126,23 +129,34 @@ describe('matchMap', function () {
           ]
           : [],
       ],
-      actualMatchers: ({mayNotContainedValues: values}) => [
-        values,
-        values.map((o, i) => i % 2 === 0 ? o : {value: o}),
-        values.map((o, i) => i % 2 !== 0 ? o : {value: o}),
-        values.map(o => ({value: o})),
+      actualEntries: ({mayNotContainedValues: values}) => [
+        values.map((o) => [getValue(o), o]),
       ],
-      expectedMatchers: ({mayNotContainsValues: values}) => [
+      expectedEntries: ({mayNotContainsValues: values, resultFalseType}) => [
+        ...resultFalseType === 'expectedValue' ? [
+          values.map<[number, any]>((o, i) => [getValue(o), i === 0 ? o + '' : o]),
+          values.map<[number, any]>((o, i) => [getValue(o), i === values.length - 1 ? o + '' : o]),
+        ] : [
+          values.map<[number, any]>((o) => [getValue(o), o]),
+        ],
+      ],
+      actualMatchers: ({actualEntries: values}) => [
         values,
-        values.map((o, i) => i % 2 === 0 ? o : {value: o}),
-        values.map((o, i) => i % 2 !== 0 ? o : {value: o}),
-        values.map(o => ({value: o})),
+        values.map((o, i) => [o[0], i % 2 === 0 ? o[1] : {value: o[1]}]),
+        values.map((o, i) => [o[0], i % 2 !== 0 ? o[1] : {value: o[1]}]),
+        values.map(o => [o[0], {value: o[1]}]),
+      ],
+      expectedMatchers: ({expectedEntries: values}) => [
+        values,
+        values.map((o, i) => [o[0], i % 2 === 0 ? o[1] : {value: o[1]}]),
+        values.map((o, i) => [o[0], i % 2 !== 0 ? o[1] : {value: o[1]}]),
+        values.map(o => [o[0], {value: o[1]}]),
       ],
       actual: ({actualMatchers: values}) => [
-        new Map(values.map((o) => [getValue(o), o])),
+        new Map(values),
       ],
-      expected: ({expectedMatchers: values}) => [
-        new Map(values.map((o) => [getValue(o), o])),
+      expected: ({expectedMatchers: values, resultFalseType}) => [
+        new Map(values),
       ],
     })()
   })
