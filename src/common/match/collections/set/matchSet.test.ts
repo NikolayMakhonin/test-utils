@@ -1,9 +1,8 @@
 /* eslint-disable array-element-newline */
 import {createTestVariants} from '@flemist/test-variants'
-import {matchMap} from './matchMap'
-import {getValue, match} from '../test/helpers'
+import {matchSet} from './matchSet'
 
-describe('matchMap', function () {
+describe('matchSet', function () {
   const testVariants = createTestVariants(({
     matchFunc,
     actual,
@@ -12,9 +11,9 @@ describe('matchMap', function () {
     mayNotContains,
     mayNotContained,
   }: {
-    matchFunc: typeof matchMap
-    actual: Map<any, any>
-    expected: Map<any, any>
+    matchFunc: typeof matchSet
+    actual: Set<any>
+    expected: Set<any>
     result: boolean
     mayNotContains?: boolean
     mayNotContained?: boolean
@@ -22,7 +21,7 @@ describe('matchMap', function () {
     // console.log(actual)
     // console.log(expected, result)
     // console.log()
-    const resultActual = matchMap(actual, expected, match, {
+    const resultActual = matchSet(actual, expected, {
       mayNotContains,
       mayNotContained,
     })
@@ -41,10 +40,8 @@ describe('matchMap', function () {
       expectedValues: number[]
       mayNotContainsValues: number[]
       mayNotContainedValues: number[]
-      actualMatchers: any[]
-      expectedMatchers: any[]
     }>({
-      matchFunc      : [matchMap],
+      matchFunc      : [matchSet],
       result         : [true, false],
       mayNotContains : [false, true],
       mayNotContained: ({mayNotContains}) => mayNotContains ? [false] : [false, true],
@@ -126,23 +123,11 @@ describe('matchMap', function () {
           ]
           : [],
       ],
-      actualMatchers: ({mayNotContainedValues: values}) => [
-        values,
-        values.map((o, i) => i % 2 === 0 ? o : {value: o}),
-        values.map((o, i) => i % 2 !== 0 ? o : {value: o}),
-        values.map(o => ({value: o})),
+      actual: ({mayNotContainedValues: values}) => [
+        new Set(values),
       ],
-      expectedMatchers: ({mayNotContainsValues: values}) => [
-        values,
-        values.map((o, i) => i % 2 === 0 ? o : {value: o}),
-        values.map((o, i) => i % 2 !== 0 ? o : {value: o}),
-        values.map(o => ({value: o})),
-      ],
-      actual: ({actualMatchers: values}) => [
-        new Map(values.map((o) => [getValue(o), o])),
-      ],
-      expected: ({expectedMatchers: values}) => [
-        new Map(values.map((o) => [getValue(o), o])),
+      expected: ({mayNotContainsValues: values}) => [
+        new Set(values),
       ],
     })()
   })

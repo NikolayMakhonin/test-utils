@@ -1,9 +1,12 @@
 /* eslint-disable array-element-newline */
 import {createTestVariants} from '@flemist/test-variants'
-import {matchArrayMapOptimized} from './matchArrayMapOptimized'
-import {match, getKey} from '../../test/helpers'
+import {calcPerformance} from 'rdtsc'
+import {matchArraySetSimple} from './matchArraySetSimple'
+import {matchArraySetOptimized} from './matchArraySetOptimized'
+import {matchArraySet, shouldUseOptimized} from './matchArraySet'
+import {isMatcher, match} from '../../../test/helpers'
 
-describe('matchArrayMap', function () {
+describe('matchArraySet', function () {
   const testVariants = createTestVariants(({
     matchFunc,
     actual,
@@ -14,7 +17,7 @@ describe('matchArrayMap', function () {
     actualRepeats,
     expectedRepeats,
   }: {
-    matchFunc: typeof matchArrayMapOptimized
+    matchFunc: typeof matchArraySetOptimized
     actual: any[]
     expected: any[]
     result: boolean
@@ -26,7 +29,7 @@ describe('matchArrayMap', function () {
     // console.log(actual)
     // console.log(expected, result)
     // console.log()
-    const resultActual = matchArrayMapOptimized(actual, expected, getKey, match, {
+    const resultActual = matchArraySetOptimized(actual, expected, isMatcher, match, {
       mayNotContains,
       mayNotContained,
       actualRepeats,
@@ -36,7 +39,9 @@ describe('matchArrayMap', function () {
   })
 
   it('simple', async function () {
-    assert.throws(() => matchArrayMapOptimized([], [], getKey, match, {mayNotContains: true, mayNotContained: true}),
+    assert.throws(() => matchArraySetSimple([], [], isMatcher, match, {mayNotContains: true, mayNotContained: true}),
+      /At least one of the options 'mayNotContains' or 'mayNotContained' should be false/)
+    assert.throws(() => matchArraySetOptimized([], [], isMatcher, match, {mayNotContains: true, mayNotContained: true}),
       /At least one of the options 'mayNotContains' or 'mayNotContained' should be false/)
   })
 
@@ -52,7 +57,7 @@ describe('matchArrayMap', function () {
       mayNotContainedValues: number[]
       expectedShuffle: number[]
     }>({
-      matchFunc      : [matchArrayMapOptimized],
+      matchFunc      : [matchArraySetSimple, matchArraySetOptimized],
       result         : [true, false],
       mayNotContains : [false, true],
       mayNotContained: ({mayNotContains}) => mayNotContains ? [false] : [false, true],
@@ -185,5 +190,21 @@ describe('matchArrayMap', function () {
         values.map(o => ({value: o})),
       ],
     })()
+  })
+
+  it('shouldUseOptimized', function () {
+    const options = {}
+    function array(values, matchers) {
+      return Array.from({length: values + matchers}, (_, i) => i >= values ? {value: i} : i)
+    }
+    assert.strictEqual(shouldUseOptimized([], [], isMatcher, options), false)
+    assert.strictEqual(shouldUseOptimized(array(5, 0), array(6, 0), isMatcher, options), false)
+    assert.strictEqual(shouldUseOptimized(array(1, 0), array(30, 0), isMatcher, options), false)
+    assert.strictEqual(shouldUseOptimized(array(1, 0), array(31, 0), isMatcher, options), true)
+    assert.strictEqual(shouldUseOptimized(array(0, 100), array(0, 100), isMatcher, options), false)
+    assert.strictEqual(shouldUseOptimized(array(0, 10000), array(0, 1), isMatcher, options), false)
+    assert.strictEqual(shouldUseOptimized(array(0, 9999), array(0, 1), isMatcher, options), false)
+    assert.strictEqual(shouldUseOptimized(array(1, 0), array(30, 30), isMatcher, options), true)
+    assert.strictEqual(shouldUseOptimized(array(1, 0), array(30, 31), isMatcher, options), false)
   })
 })

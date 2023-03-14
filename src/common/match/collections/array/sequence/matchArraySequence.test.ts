@@ -1,6 +1,6 @@
 import {createTestVariants} from '@flemist/test-variants'
 import {matchArraySequence} from './matchArraySequence'
-import {addBreaks, addRepeats, isMatcher, match} from '../../test/helpers'
+import {addBreaks, addRepeats, isMatcher, match} from '../../../test/helpers'
 
 describe('matchArraySequence', function () {
   const testVariants = createTestVariants(({
