@@ -1,5 +1,5 @@
 import {MatchArraySetOptions} from './contracts'
-import {MatchResult} from 'src/common/match/contracts'
+import {MatchResult, MatchResult2} from 'src/common/match/contracts'
 
 export function matchArraySetOptimized<T>(
   actual: T[],
@@ -7,7 +7,7 @@ export function matchArraySetOptimized<T>(
   isMatcher: (value: any) => boolean,
   match: (actual: T, expected: T) => MatchResult<T>,
   options: MatchArraySetOptions,
-): boolean {
+): MatchResult2 {
   if (options?.mayNotContains && options?.mayNotContained) {
     throw new Error(`At least one of the options 'mayNotContains' or 'mayNotContained' should be false`)
   }
@@ -385,7 +385,10 @@ export function matchArraySetOptimized<T>(
 
   if (actualMap?.size || actualMatcherMap?.size) {
     if (options?.mayNotContained) {
-      return true
+      return {
+        result: true,
+        nested: null,
+      }
     }
 
     if (options?.actualRepeats) {
@@ -407,7 +410,10 @@ export function matchArraySetOptimized<T>(
           }
 
           if (!found) {
-            return false
+            return {
+              result: false,
+              nested: null,
+            }
           }
         }
       }
@@ -432,19 +438,28 @@ export function matchArraySetOptimized<T>(
           }
 
           if (!found) {
-            return false
+            return {
+              result: false,
+              nested: null,
+            }
           }
         }
       }
     }
     else {
-      return false
+      return {
+        result: false,
+        nested: null,
+      }
     }
   }
 
   if (expectedMap?.size || expectedMatcherMap?.size) {
     if (options?.mayNotContains) {
-      return true
+      return {
+        result: true,
+        nested: null,
+      }
     }
 
     if (options?.expectedRepeats) {
@@ -466,7 +481,10 @@ export function matchArraySetOptimized<T>(
           }
 
           if (!found) {
-            return false
+            return {
+              result: false,
+              nested: null,
+            }
           }
         }
       }
@@ -491,15 +509,24 @@ export function matchArraySetOptimized<T>(
           }
 
           if (!found) {
-            return false
+            return {
+              result: false,
+              nested: null,
+            }
           }
         }
       }
     }
     else {
-      return false
+      return {
+        result: false,
+        nested: null,
+      }
     }
   }
 
-  return true
+  return {
+    result: true,
+    nested: null,
+  }
 }

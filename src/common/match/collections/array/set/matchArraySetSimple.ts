@@ -1,5 +1,5 @@
 import {MatchArraySetOptions} from './contracts'
-import {MatchResult} from 'src/common/match/contracts'
+import {MatchResult, MatchResult2} from 'src/common/match/contracts'
 
 export function matchArraySetSimple<T>(
   actual: T[],
@@ -7,7 +7,7 @@ export function matchArraySetSimple<T>(
   isMatcher: (value: any) => boolean,
   match: (actual: T, expected: T) => MatchResult<T>,
   options: MatchArraySetOptions,
-): boolean {
+): MatchResult2 {
   if (options?.mayNotContains && options?.mayNotContained) {
     throw new Error(`At least one of the options 'mayNotContains' or 'mayNotContained' should be false`)
   }
@@ -77,7 +77,10 @@ export function matchArraySetSimple<T>(
 
   if (actualValues.length > 0) {
     if (options?.mayNotContained) {
-      return true
+      return {
+        result: true,
+        nested: null,
+      }
     }
 
     if (options?.actualRepeats) {
@@ -93,19 +96,28 @@ export function matchArraySetSimple<T>(
           }
         }
         if (!found) {
-          return false
+          return {
+            result: false,
+            nested: null,
+          }
         }
         actualIndex++
       }
     }
     else {
-      return false
+      return {
+        result: false,
+        nested: null,
+      }
     }
   }
 
   if (expectedValues.length > 0) {
     if (options?.mayNotContains) {
-      return true
+      return {
+        result: true,
+        nested: null,
+      }
     }
 
     if (options?.expectedRepeats) {
@@ -121,15 +133,24 @@ export function matchArraySetSimple<T>(
           }
         }
         if (!found) {
-          return false
+          return {
+            result: false,
+            nested: null,
+          }
         }
         expectedIndex++
       }
     }
     else {
-      return false
+      return {
+        result: false,
+        nested: null,
+      }
     }
   }
 
-  return true
+  return {
+    result: true,
+    nested: null,
+  }
 }

@@ -49,7 +49,7 @@ describe('matchArrayMap', function () {
       actualRepeats,
       expectedRepeats,
     })
-    assert.strictEqual(resultActual, result)
+    assert.strictEqual(resultActual.result, result)
   })
 
   it('simple', async function () {

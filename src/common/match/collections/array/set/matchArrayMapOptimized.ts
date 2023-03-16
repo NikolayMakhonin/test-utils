@@ -1,5 +1,5 @@
 import {MatchArraySetOptions} from './contracts'
-import {ANY, MatchResult, MatchResultNested} from 'src/common/match/contracts'
+import {ANY, MatchResult, MatchResult2, MatchResultNested} from 'src/common/match/contracts'
 
 export function matchArrayMapOptimized<T>(
   actual: T[],
@@ -7,7 +7,7 @@ export function matchArrayMapOptimized<T>(
   getKey: (value: T) => any,
   match: (actual: T, expected: T) => MatchResult<number>,
   options: MatchArraySetOptions,
-): boolean {
+): MatchResult2 {
   if (options?.mayNotContains && options?.mayNotContained) {
     throw new Error(`At least one of the options 'mayNotContains' or 'mayNotContained' should be false`)
   }
@@ -161,12 +161,18 @@ export function matchArrayMapOptimized<T>(
 
   if (actualMap?.size) {
     if (options?.mayNotContained) {
-      return true
+      return {
+        result: true,
+        nested: nestedTrue,
+      }
     }
 
     if (options?.actualRepeats) {
       if (!expectedFoundMap) {
-        return false
+        return {
+          result: false,
+          nested: null,
+        }
       }
       for (const [actualKey, actualValues] of actualMap) {
         if (actualKey === ANY) {
@@ -178,7 +184,10 @@ export function matchArrayMapOptimized<T>(
             }
           }
           if (!found) {
-            return false
+            return {
+              result: false,
+              nested: null,
+            }
           }
         }
         else {
@@ -194,24 +203,36 @@ export function matchArrayMapOptimized<T>(
             }
           }
           if (!found) {
-            return false
+            return {
+              result: false,
+              nested: null,
+            }
           }
         }
       }
     }
     else {
-      return false
+      return {
+        result: false,
+        nested: null,
+      }
     }
   }
 
   if (expectedMap?.size) {
     if (options?.mayNotContains) {
-      return true
+      return {
+        result: true,
+        nested: nestedTrue,
+      }
     }
 
     if (options?.expectedRepeats) {
       if (!actualFoundMap) {
-        return false
+        return {
+          result: false,
+          nested: null,
+        }
       }
       for (const [expectedKey, expectedValues] of expectedMap) {
         if (expectedKey === ANY) {
@@ -223,7 +244,10 @@ export function matchArrayMapOptimized<T>(
             }
           }
           if (!found) {
-            return false
+            return {
+              result: false,
+              nested: null,
+            }
           }
         }
         else {
@@ -239,15 +263,24 @@ export function matchArrayMapOptimized<T>(
             }
           }
           if (!found) {
-            return false
+            return {
+              result: false,
+              nested: null,
+            }
           }
         }
       }
     }
     else {
-      return false
+      return {
+        result: false,
+        nested: null,
+      }
     }
   }
 
-  return true
+  return {
+    result: true,
+    nested: nestedTrue,
+  }
 }

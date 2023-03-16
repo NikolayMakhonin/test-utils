@@ -1,7 +1,7 @@
 import {MatchArraySetOptions} from './contracts'
 import {matchArraySetSimple} from './matchArraySetSimple'
 import {matchArraySetOptimized} from './matchArraySetOptimized'
-import {MatchResult} from 'src/common/match/contracts'
+import {MatchResult, MatchResult2} from 'src/common/match/contracts'
 
 export function shouldUseOptimized(
   actual: any[],
@@ -51,7 +51,7 @@ export function matchArraySet<T>(
   isMatcher: (value: any) => boolean,
   match: (actual: T, expected: T) => MatchResult<T>,
   options: MatchArraySetOptions,
-): boolean {
+): MatchResult2 {
   if (shouldUseOptimized(actual, expected, isMatcher, options)) {
     return matchArraySetOptimized(actual, expected, isMatcher, match, options)
   }
