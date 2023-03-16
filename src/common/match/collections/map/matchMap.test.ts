@@ -1,7 +1,7 @@
 /* eslint-disable array-element-newline */
 import {createTestVariants} from '@flemist/test-variants'
 import {matchMap} from './matchMap'
-import {getValue, match} from '../../test/helpers'
+import {getValue, matchOld} from '../../test/helpers'
 
 describe('matchMap', function () {
   const testVariants = createTestVariants(({
@@ -22,7 +22,7 @@ describe('matchMap', function () {
     // console.log(actual)
     // console.log(expected, result)
     // console.log()
-    const resultActual = matchMap(actual, expected, match, {
+    const resultActual = matchMap(actual, expected, matchOld, {
       mayNotContains,
       mayNotContained,
     })

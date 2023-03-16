@@ -175,4 +175,5 @@ export type ToExpectedDeep<T, Async extends boolean = boolean> =
 //   )
 // }
 
-export const ANY = Symbol('ANY')
+export const ANY: any = Symbol('ANY')
+export const UNSET: any = Symbol('UNSET')

@@ -35,7 +35,7 @@ describe('matchArraySequence', function () {
       repeats,
       breaks,
     })
-    assert.strictEqual(resultActual, result)
+    assert.strictEqual(resultActual.result, result)
   })
 
   it('variants', async function () {
@@ -96,65 +96,65 @@ describe('matchArraySequence', function () {
   })
 
   it('simple', async function () {
-    assert.strictEqual(true, matchArraySequence([1, 2, 3], [1, 2, 3, 4], isMatcher, match, {expectedMayNotStartWith: false, expectedMayNotEndWith: true}))
-    assert.strictEqual(true, matchArraySequence([1, 2, 3], [0, 1, 2, 3], isMatcher, match, {expectedMayNotStartWith: true, expectedMayNotEndWith: false}))
+    assert.strictEqual(true, matchArraySequence([1, 2, 3], [1, 2, 3, 4], isMatcher, match, {expectedMayNotStartWith: false, expectedMayNotEndWith: true}).result)
+    assert.strictEqual(true, matchArraySequence([1, 2, 3], [0, 1, 2, 3], isMatcher, match, {expectedMayNotStartWith: true, expectedMayNotEndWith: false}).result)
     // assert.strictEqual(true, matchSequence([1, 2, 3], [0, 1, 2, 3], isMatcher, match, {
     //   expectedMayNotStartWith: true,
     //   expectedMayNotEndWith  : false,
     //   actualMayNotStartWith  : true,
-    // }))
+    // }).result)
     // assert.strictEqual(true, matchSequence([1, 2, 3, 4], [0, 1, 2, 3], isMatcher, match, {
     //   expectedMayNotStartWith: true,
     //   expectedMayNotEndWith  : false,
     //   actualMayNotStartWith  : true,
-    // }))
+    // }).result)
 
-    assert.strictEqual(false, matchArraySequence([-1, 1, 2, 3], [1, 2, 3, 4], isMatcher, match, {expectedMayNotStartWith: false, expectedMayNotEndWith: true}))
-    assert.strictEqual(false, matchArraySequence([-1, 1, 2, 3], [0, 1, 2, 3], isMatcher, match, {expectedMayNotStartWith: true, expectedMayNotEndWith: false}))
+    assert.strictEqual(false, matchArraySequence([-1, 1, 2, 3], [1, 2, 3, 4], isMatcher, match, {expectedMayNotStartWith: false, expectedMayNotEndWith: true}).result)
+    assert.strictEqual(false, matchArraySequence([-1, 1, 2, 3], [0, 1, 2, 3], isMatcher, match, {expectedMayNotStartWith: true, expectedMayNotEndWith: false}).result)
     // assert.strictEqual(false, matchSequence([1, 2, 3, 4], [0, 1, 2, 3], isMatcher, match, {
     //   expectedMayNotStartWith: true,
     //   expectedMayNotEndWith  : false,
     //   actualMayNotStartWith  : true,
-    // }))
+    // }).result)
     // assert.strictEqual(false, matchSequence([1, 2, 3, 4], [0, 1, 2, 3], isMatcher, match, {
     //   expectedMayNotStartWith: true,
     //   expectedMayNotEndWith  : false,
     //   actualMayNotStartWith  : true,
-    // }))
+    // }).result)
     assert.throws(() => matchArraySequence([1, 2, 3], [1, 2, 3], isMatcher, match, {
       expectedMayNotStartWith: true,
       expectedMayNotEndWith  : false,
       actualMayNotStartWith  : true,
     }), /You can't use both/i)
 
-    assert.strictEqual(true, matchArraySequence([1, 2, 3], [1, 2, 3], isMatcher, match, {actualMayNotStartWith: false, actualMayNotEndWith: false, repeats: false, breaks: false}))
-    assert.strictEqual(false, matchArraySequence([1, 1, 2, 3], [1, 2, 3], isMatcher, match, {actualMayNotStartWith: false, actualMayNotEndWith: false, repeats: false, breaks: false}))
-    assert.strictEqual(false, matchArraySequence([1, 2, 3], [1, 1, 2, 3], isMatcher, match, {actualMayNotStartWith: false, actualMayNotEndWith: false, repeats: false, breaks: false}))
-    assert.strictEqual(false, matchArraySequence([1, 2, 3, 3], [1, 2, 3], isMatcher, match, {actualMayNotStartWith: false, actualMayNotEndWith: false, repeats: false, breaks: false}))
-    assert.strictEqual(false, matchArraySequence([1, 2, 3], [1, 2, 3, 3], isMatcher, match, {actualMayNotStartWith: false, actualMayNotEndWith: false, repeats: false, breaks: false}))
+    assert.strictEqual(true, matchArraySequence([1, 2, 3], [1, 2, 3], isMatcher, match, {actualMayNotStartWith: false, actualMayNotEndWith: false, repeats: false, breaks: false}).result)
+    assert.strictEqual(false, matchArraySequence([1, 1, 2, 3], [1, 2, 3], isMatcher, match, {actualMayNotStartWith: false, actualMayNotEndWith: false, repeats: false, breaks: false}).result)
+    assert.strictEqual(false, matchArraySequence([1, 2, 3], [1, 1, 2, 3], isMatcher, match, {actualMayNotStartWith: false, actualMayNotEndWith: false, repeats: false, breaks: false}).result)
+    assert.strictEqual(false, matchArraySequence([1, 2, 3, 3], [1, 2, 3], isMatcher, match, {actualMayNotStartWith: false, actualMayNotEndWith: false, repeats: false, breaks: false}).result)
+    assert.strictEqual(false, matchArraySequence([1, 2, 3], [1, 2, 3, 3], isMatcher, match, {actualMayNotStartWith: false, actualMayNotEndWith: false, repeats: false, breaks: false}).result)
 
-    assert.strictEqual(true, matchArraySequence([1, 2, 3], [1, 2, 3], isMatcher, match, {actualMayNotStartWith: false, actualMayNotEndWith: false, repeats: true, breaks: false}))
-    assert.strictEqual(true, matchArraySequence([1, 1, 2, 3], [1, 2, 3], isMatcher, match, {actualMayNotStartWith: false, actualMayNotEndWith: false, repeats: true, breaks: false}))
-    assert.strictEqual(false, matchArraySequence([1, 2, 3], [1, 1, 2, 3], isMatcher, match, {actualMayNotStartWith: false, actualMayNotEndWith: false, repeats: true, breaks: false}))
-    assert.strictEqual(true, matchArraySequence([1, 2, 3, 3], [1, 2, 3], isMatcher, match, {actualMayNotStartWith: false, actualMayNotEndWith: false, repeats: true, breaks: false}))
-    assert.strictEqual(false, matchArraySequence([1, 2, 3], [1, 2, 3, 3], isMatcher, match, {actualMayNotStartWith: false, actualMayNotEndWith: false, repeats: true, breaks: false}))
-    assert.strictEqual(false, matchArraySequence([1, 2, 1, 3], [1, 2, 3], isMatcher, match, {actualMayNotStartWith: false, actualMayNotEndWith: false, repeats: true, breaks: false}))
+    assert.strictEqual(true, matchArraySequence([1, 2, 3], [1, 2, 3], isMatcher, match, {actualMayNotStartWith: false, actualMayNotEndWith: false, repeats: true, breaks: false}).result)
+    assert.strictEqual(true, matchArraySequence([1, 1, 2, 3], [1, 2, 3], isMatcher, match, {actualMayNotStartWith: false, actualMayNotEndWith: false, repeats: true, breaks: false}).result)
+    assert.strictEqual(false, matchArraySequence([1, 2, 3], [1, 1, 2, 3], isMatcher, match, {actualMayNotStartWith: false, actualMayNotEndWith: false, repeats: true, breaks: false}).result)
+    assert.strictEqual(true, matchArraySequence([1, 2, 3, 3], [1, 2, 3], isMatcher, match, {actualMayNotStartWith: false, actualMayNotEndWith: false, repeats: true, breaks: false}).result)
+    assert.strictEqual(false, matchArraySequence([1, 2, 3], [1, 2, 3, 3], isMatcher, match, {actualMayNotStartWith: false, actualMayNotEndWith: false, repeats: true, breaks: false}).result)
+    assert.strictEqual(false, matchArraySequence([1, 2, 1, 3], [1, 2, 3], isMatcher, match, {actualMayNotStartWith: false, actualMayNotEndWith: false, repeats: true, breaks: false}).result)
 
-    assert.strictEqual(true, matchArraySequence([1, 2, 3], [1, 2, 3], isMatcher, match, {actualMayNotStartWith: false, actualMayNotEndWith: false, repeats: false, breaks: true}))
-    assert.strictEqual(true, matchArraySequence([1, 1, 2, 3], [1, 2, 3], isMatcher, match, {actualMayNotStartWith: false, actualMayNotEndWith: false, repeats: false, breaks: true}))
-    assert.strictEqual(false, matchArraySequence([1, 2, 3], [1, 1, 2, 3], isMatcher, match, {actualMayNotStartWith: false, actualMayNotEndWith: false, repeats: false, breaks: true}))
-    assert.strictEqual(true, matchArraySequence([1, 0, 2, 0, 0, 3], [1, 2, 3], isMatcher, match, {actualMayNotStartWith: false, actualMayNotEndWith: false, repeats: false, breaks: true}))
-    assert.strictEqual(true, matchArraySequence([1, 0, 2, 3, 2, 1, 3], [1, 2, 3], isMatcher, match, {actualMayNotStartWith: false, actualMayNotEndWith: false, repeats: false, breaks: true}))
-    assert.strictEqual(false, matchArraySequence([1, 0, 2, 3, 2, 1, 3, 2], [1, 2, 3], isMatcher, match, {actualMayNotStartWith: false, actualMayNotEndWith: false, repeats: false, breaks: true}))
+    assert.strictEqual(true, matchArraySequence([1, 2, 3], [1, 2, 3], isMatcher, match, {actualMayNotStartWith: false, actualMayNotEndWith: false, repeats: false, breaks: true}).result)
+    assert.strictEqual(true, matchArraySequence([1, 1, 2, 3], [1, 2, 3], isMatcher, match, {actualMayNotStartWith: false, actualMayNotEndWith: false, repeats: false, breaks: true}).result)
+    assert.strictEqual(false, matchArraySequence([1, 2, 3], [1, 1, 2, 3], isMatcher, match, {actualMayNotStartWith: false, actualMayNotEndWith: false, repeats: false, breaks: true}).result)
+    assert.strictEqual(true, matchArraySequence([1, 0, 2, 0, 0, 3], [1, 2, 3], isMatcher, match, {actualMayNotStartWith: false, actualMayNotEndWith: false, repeats: false, breaks: true}).result)
+    assert.strictEqual(true, matchArraySequence([1, 0, 2, 3, 2, 1, 3], [1, 2, 3], isMatcher, match, {actualMayNotStartWith: false, actualMayNotEndWith: false, repeats: false, breaks: true}).result)
+    assert.strictEqual(false, matchArraySequence([1, 0, 2, 3, 2, 1, 3, 2], [1, 2, 3], isMatcher, match, {actualMayNotStartWith: false, actualMayNotEndWith: false, repeats: false, breaks: true}).result)
 
-    assert.strictEqual(true, matchArraySequence([0, 1, 1, 2, 2, 3, 3, 0], [1, 2, 3], isMatcher, match, {actualMayNotStartWith: true, actualMayNotEndWith: true, repeats: true, breaks: false}))
-    assert.strictEqual(false, matchArraySequence([0, 1, 1, 2, 2, 1, 3, 3, 0], [1, 2, 3], isMatcher, match, {actualMayNotStartWith: true, actualMayNotEndWith: true, repeats: true, breaks: false}))
-    assert.strictEqual(true, matchArraySequence([0, 1, 1, 2, 2, 3, 3, 0], [1, 2, 3], isMatcher, match, {actualMayNotStartWith: true, actualMayNotEndWith: true, repeats: false, breaks: true}))
-    assert.strictEqual(true, matchArraySequence([0, 1, 1, 2, 2, 1, 3, 3, 0], [1, 2, 3], isMatcher, match, {actualMayNotStartWith: true, actualMayNotEndWith: true, repeats: false, breaks: true}))
-    assert.strictEqual(true, matchArraySequence([0, 1, 1, 2, 2, 3, 3, 0], [1, 2, 3], isMatcher, match, {actualMayNotStartWith: true, actualMayNotEndWith: true, repeats: true, breaks: true}))
-    assert.strictEqual(true, matchArraySequence([0, 1, 1, 2, 2, 1, 3, 3, 0], [1, 2, 3], isMatcher, match, {actualMayNotStartWith: true, actualMayNotEndWith: true, repeats: true, breaks: true}))
+    assert.strictEqual(true, matchArraySequence([0, 1, 1, 2, 2, 3, 3, 0], [1, 2, 3], isMatcher, match, {actualMayNotStartWith: true, actualMayNotEndWith: true, repeats: true, breaks: false}).result)
+    assert.strictEqual(false, matchArraySequence([0, 1, 1, 2, 2, 1, 3, 3, 0], [1, 2, 3], isMatcher, match, {actualMayNotStartWith: true, actualMayNotEndWith: true, repeats: true, breaks: false}).result)
+    assert.strictEqual(true, matchArraySequence([0, 1, 1, 2, 2, 3, 3, 0], [1, 2, 3], isMatcher, match, {actualMayNotStartWith: true, actualMayNotEndWith: true, repeats: false, breaks: true}).result)
+    assert.strictEqual(true, matchArraySequence([0, 1, 1, 2, 2, 1, 3, 3, 0], [1, 2, 3], isMatcher, match, {actualMayNotStartWith: true, actualMayNotEndWith: true, repeats: false, breaks: true}).result)
+    assert.strictEqual(true, matchArraySequence([0, 1, 1, 2, 2, 3, 3, 0], [1, 2, 3], isMatcher, match, {actualMayNotStartWith: true, actualMayNotEndWith: true, repeats: true, breaks: true}).result)
+    assert.strictEqual(true, matchArraySequence([0, 1, 1, 2, 2, 1, 3, 3, 0], [1, 2, 3], isMatcher, match, {actualMayNotStartWith: true, actualMayNotEndWith: true, repeats: true, breaks: true}).result)
 
-    assert.strictEqual(false, matchArraySequence([0, 1, 2, 3], [1, 2, 3], isMatcher, match, {actualMayNotStartWith: false, actualMayNotEndWith: false, repeats: false, breaks: true}))
+    assert.strictEqual(false, matchArraySequence([0, 1, 2, 3], [1, 2, 3], isMatcher, match, {actualMayNotStartWith: false, actualMayNotEndWith: false, repeats: false, breaks: true}).result)
 
   })
 

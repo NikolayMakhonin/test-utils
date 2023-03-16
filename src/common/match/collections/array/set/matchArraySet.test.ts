@@ -1,6 +1,5 @@
 /* eslint-disable array-element-newline */
 import {createTestVariants} from '@flemist/test-variants'
-import {calcPerformance} from 'rdtsc'
 import {matchArraySetSimple} from './matchArraySetSimple'
 import {matchArraySetOptimized} from './matchArraySetOptimized'
 import {matchArraySet, shouldUseOptimized} from './matchArraySet'

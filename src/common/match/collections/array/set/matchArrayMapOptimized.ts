@@ -1,11 +1,11 @@
 import {MatchArraySetOptions} from './contracts'
-import {ANY} from 'src/common/match/contracts'
+import {ANY, MatchResult, MatchResultNested} from 'src/common/match/contracts'
 
 export function matchArrayMapOptimized<T>(
   actual: T[],
   expected: T[],
   getKey: (value: T) => any,
-  match: (actual: T, expected: T) => boolean,
+  match: (actual: T, expected: T) => MatchResult<number>,
   options: MatchArraySetOptions,
 ): boolean {
   if (options?.mayNotContains && options?.mayNotContained) {
@@ -47,6 +47,7 @@ export function matchArrayMapOptimized<T>(
 
   let actualFoundMap: Map<any, T[]>
   let expectedFoundMap: Map<any, T[]>
+  const nestedTrue: MatchResultNested[] = []
 
   function f1(
     actualKey: any,
@@ -61,7 +62,12 @@ export function matchArrayMapOptimized<T>(
         let expectedIndex = 0
         while (expectedIndex < expectedValues.length) {
           const expectedValue = expectedValues[expectedIndex]
-          if (match(actualValue, expectedValue)) {
+          const matchResult = match(actualValue, expectedValue)
+          if (matchResult.result) {
+            nestedTrue.push({
+              key   : actualKey,
+              result: matchResult,
+            })
             actualValues[actualIndex] = actualValues[actualValues.length - 1]
             actualValues.length--
             expectedValues[expectedIndex] = expectedValues[expectedValues.length - 1]
@@ -135,7 +141,8 @@ export function matchArrayMapOptimized<T>(
       let found = false
       for (let j = 0, len = expectedValues.length; j < len; j++) {
         const expectedItem = expectedValues[j]
-        if (match(actualItem, expectedItem)) {
+        const matchResult = match(actualItem, expectedItem)
+        if (matchResult.result) {
           found = true
           break
         }

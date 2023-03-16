@@ -1,10 +1,11 @@
 import {MatchArraySetOptions} from './contracts'
+import {MatchResult} from 'src/common/match/contracts'
 
 export function matchArraySetOptimized<T>(
   actual: T[],
   expected: T[],
   isMatcher: (value: any) => boolean,
-  match: (actual: T, expected: T) => boolean,
+  match: (actual: T, expected: T) => MatchResult<T>,
   options: MatchArraySetOptions,
 ): boolean {
   if (options?.mayNotContains && options?.mayNotContained) {
@@ -117,29 +118,32 @@ export function matchArraySetOptimized<T>(
     while (actualCount > 0) {
       let found = false
       for (let [expectedItem, expectedCount] of expectedMap) {
-        if (expectedCount > 0 && match(actualItem, expectedItem)) {
-          expectedCount--
-          if (!expectedCount) {
-            expectedMap.delete(expectedItem)
+        if (expectedCount > 0) {
+          const matchResult = match(actualItem, expectedItem)
+          if (matchResult.result) {
+            expectedCount--
+            if (!expectedCount) {
+              expectedMap.delete(expectedItem)
+            }
+            else {
+              expectedMap.set(expectedItem, expectedCount)
+            }
+            actualCount--
+            if (isMatcher(actualItem)) {
+              actualFoundMatcherSet.add(actualItem)
+            }
+            else {
+              actualFoundValuesSet.add(actualItem)
+            }
+            if (isMatcher(expectedItem)) {
+              expectedFoundMatcherSet.add(expectedItem)
+            }
+            else {
+              expectedFoundValuesSet.add(expectedItem)
+            }
+            found = true
+            break
           }
-          else {
-            expectedMap.set(expectedItem, expectedCount)
-          }
-          actualCount--
-          if (isMatcher(actualItem)) {
-            actualFoundMatcherSet.add(actualItem)
-          }
-          else {
-            actualFoundValuesSet.add(actualItem)
-          }
-          if (isMatcher(expectedItem)) {
-            expectedFoundMatcherSet.add(expectedItem)
-          }
-          else {
-            expectedFoundValuesSet.add(expectedItem)
-          }
-          found = true
-          break
         }
       }
       if (!found) {
@@ -360,7 +364,8 @@ export function matchArraySetOptimized<T>(
     // if (Array.isArray(expectedFoundSet)) {
     for (let i = 0, len = expectedFoundSet.length; i < len; i++) {
       const expectedItem = expectedFoundSet[i]
-      if (match(actualItem, expectedItem)) {
+      const matchResult = match(actualItem, expectedItem)
+      if (matchResult.result) {
         found = true
         break
       }
@@ -368,7 +373,8 @@ export function matchArraySetOptimized<T>(
     // }
     // else {
     //   for (const expectedItem of expectedFoundSet) {
-    //     if (match(actualItem, expectedItem)) {
+    //     const matchResult = match(actualItem, expectedItem)
+    //     if (matchResult.result) {
     //       found = true
     //       break
     //     }
@@ -384,7 +390,7 @@ export function matchArraySetOptimized<T>(
 
     if (options?.actualRepeats) {
       if (actualMap) {
-        for (const [actualItem, actualCount] of actualMap) {
+        for (const [actualItem] of actualMap) {
           if (expectedFoundValuesSet?.has(actualItem)) {
             break
           }
@@ -443,7 +449,7 @@ export function matchArraySetOptimized<T>(
 
     if (options?.expectedRepeats) {
       if (expectedMap) {
-        for (const [expectedItem, expectedCount] of expectedMap) {
+        for (const [expectedItem] of expectedMap) {
           if (actualFoundValuesSet?.has(expectedItem)) {
             break
           }

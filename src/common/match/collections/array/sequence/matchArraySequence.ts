@@ -1,12 +1,13 @@
 import {MatchArraySequenceOptions} from './contracts'
+import {MatchResult, MatchResult2, MatchResultNested, UNSET} from 'src/common/match/contracts'
 
 export function matchArraySequence(
   actual: number[],
   expected: number[],
   isMatcher: (value: any) => boolean,
-  match: (actual: number, expected: number) => boolean,
+  match: (actual: number, expected: number) => MatchResult<number>,
   options: MatchArraySequenceOptions,
-): boolean {
+): MatchResult2 {
   if (
     (options?.actualMayNotStartWith || options?.actualMayNotEndWith)
     && (options?.expectedMayNotStartWith || options?.expectedMayNotEndWith)
@@ -29,13 +30,24 @@ export function matchArraySequence(
   let lastIncrementActual = false
   let lastIncrementExpected = false
   let hasAtLeastOneMatch = false
+
+  const nestedTrue: MatchResultNested[] = []
+  let nestedFalse: MatchResultNested
+  let nestedTrueMaxLength = -1
+
   while (true) {
     if (indexActual >= actual.length || indexExpected >= expected.length) {
       if (indexExpected >= expected.length && options?.actualMayNotEndWith) {
-        return true
+        return {
+          result: true,
+          nested: nestedTrue,
+        }
       }
       if (indexActual >= actual.length && options?.expectedMayNotEndWith) {
-        return true
+        return {
+          result: true,
+          nested: nestedTrue,
+        }
       }
       if (lastIncrementActual && !lastIncrementExpected) {
         indexExpected++
@@ -66,15 +78,53 @@ export function matchArraySequence(
         continue
       }
       if (indexExpected < expected.length && !options?.expectedMayNotEndWith) {
-        return false
+        return {
+          result: false,
+          nested: [nestedFalse || {
+            key   : indexActual,
+            result: {
+              actual  : actual[indexActual],
+              expected: UNSET,
+              result  : false,
+              cause   : null,
+              nested  : null,
+              error   : null,
+            },
+          }],
+        }
       }
       if (indexActual < actual.length) {
-        return false
+        return {
+          result: false,
+          nested: [nestedFalse || {
+            key   : indexActual,
+            result: {
+              actual  : UNSET,
+              expected: expected[indexExpected],
+              result  : false,
+              cause   : null,
+              nested  : null,
+              error   : null,
+            },
+          }],
+        }
       }
-      return true
+      return {
+        result: true,
+        nested: nestedTrue,
+      }
     }
 
-    if (match(actual[indexActual], expected[indexExpected])) {
+    const actualItem = actual[indexActual]
+    const expectedItem = expected[indexExpected]
+    const matchResult = match(actualItem, expectedItem)
+
+    if (matchResult.result) {
+      nestedTrue.push({
+        key   : indexActual,
+        result: matchResult,
+      })
+
       hasAtLeastOneMatch = true
       if (options?.repeats && (!options?.breaks || indexActual >= actual.length - 2)) {
         indexActual++
@@ -87,6 +137,14 @@ export function matchArraySequence(
       }
     }
     else {
+      if (nestedTrue.length > nestedTrueMaxLength) {
+        nestedTrueMaxLength = nestedTrue.length
+        nestedFalse = {
+          key   : indexActual,
+          result: matchResult,
+        }
+      }
+
       if (options?.breaks && indexActual > 0 && indexActual < actual.length - 1) {
         indexActual++
         continue
@@ -106,7 +164,10 @@ export function matchArraySequence(
         indexExpected = indexExpectedStart
       }
       else {
-        return false
+        return {
+          result: false,
+          nested: [nestedFalse],
+        }
       }
     }
   }

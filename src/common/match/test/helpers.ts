@@ -1,4 +1,4 @@
-import {ANY} from 'src/common/match/contracts'
+import {ANY, MatchResult} from 'src/common/match/contracts'
 
 export function isMatcher(value: any): boolean {
   return typeof value === 'object'
@@ -18,7 +18,7 @@ export function getValue(value: any): number {
   return value
 }
 
-export function match(actual: any, expected: any): boolean {
+export function matchOld(actual: any, expected: any): boolean {
   if (isMatcher(actual)) {
     actual = actual.value
   }
@@ -26,6 +26,23 @@ export function match(actual: any, expected: any): boolean {
     expected = expected.value
   }
   return actual === expected
+}
+
+export function match(actual: any, expected: any): MatchResult<number> {
+  if (isMatcher(actual)) {
+    actual = actual.value
+  }
+  if (isMatcher(expected)) {
+    expected = expected.value
+  }
+  return {
+    actual,
+    expected,
+    result: actual === expected,
+    cause : null,
+    nested: null,
+    error : null,
+  }
 }
 
 export function addRepeats(arr: number[], index: number, count: number) {

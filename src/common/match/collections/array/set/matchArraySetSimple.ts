@@ -1,10 +1,11 @@
 import {MatchArraySetOptions} from './contracts'
+import {MatchResult} from 'src/common/match/contracts'
 
 export function matchArraySetSimple<T>(
   actual: T[],
   expected: T[],
   isMatcher: (value: any) => boolean,
-  match: (actual: T, expected: T) => boolean,
+  match: (actual: T, expected: T) => MatchResult<T>,
   options: MatchArraySetOptions,
 ): boolean {
   if (options?.mayNotContains && options?.mayNotContained) {
@@ -24,7 +25,8 @@ export function matchArraySetSimple<T>(
       let expectedIndex = 0
       while (expectedIndex < expectedValues.length) {
         const expectedItem = expectedValues[expectedIndex]
-        if (match(actualItem, expectedItem)) {
+        const matchResult = match(actualItem, expectedItem)
+        if (matchResult.result) {
           expectedValues[expectedIndex] = expectedValues[expectedValues.length - 1]
           expectedValues.length--
           actualValues[actualIndex] = actualValues[actualValues.length - 1]
@@ -52,7 +54,8 @@ export function matchArraySetSimple<T>(
       let actualIndex = 0
       while (actualIndex < actualValues.length) {
         const actualItem = actualValues[actualIndex]
-        if (match(actualItem, expectedItem)) {
+        const matchResult = match(actualItem, expectedItem)
+        if (matchResult.result) {
           actualValues[actualIndex] = actualValues[actualValues.length - 1]
           actualValues.length--
           expectedValues[expectedIndex] = expectedValues[expectedValues.length - 1]
@@ -83,7 +86,8 @@ export function matchArraySetSimple<T>(
         let found = false
         for (let expectedIndex = 0, len = expectedFound.length; expectedIndex < len; expectedIndex++) {
           const expectedItem = expectedFound[expectedIndex]
-          if (match(actualItem, expectedItem)) {
+          const matchResult = match(actualItem, expectedItem)
+          if (matchResult.result) {
             found = true
             break
           }
@@ -110,7 +114,8 @@ export function matchArraySetSimple<T>(
         let found = false
         for (let actualIndex = 0, len = actualFound.length; actualIndex < len; actualIndex++) {
           const actualItem = actualFound[actualIndex]
-          if (match(actualItem, expectedItem)) {
+          const matchResult = match(actualItem, expectedItem)
+          if (matchResult.result) {
             found = true
             break
           }
