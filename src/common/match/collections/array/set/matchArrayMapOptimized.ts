@@ -65,7 +65,7 @@ export function matchArrayMapOptimized<T>(
           const matchResult = match(actualValue, expectedValue)
           if (matchResult.result) {
             nestedTrue.push({
-              key   : actualKey,
+              key   : actualIndex,
               result: matchResult,
             })
             actualValues[actualIndex] = actualValues[actualValues.length - 1]
@@ -135,6 +135,7 @@ export function matchArrayMapOptimized<T>(
   function f2(
     actualValues: T[],
     expectedValues: T[],
+    isViceVersa: boolean,
   ) {
     for (let i = 0, len = actualValues.length; i < len; i++) {
       const actualItem = actualValues[i]
@@ -143,6 +144,10 @@ export function matchArrayMapOptimized<T>(
         const expectedItem = expectedValues[j]
         const matchResult = match(actualItem, expectedItem)
         if (matchResult.result) {
+          nestedTrue.push({
+            key   : isViceVersa ? j : i,
+            result: matchResult,
+          })
           found = true
           break
         }
@@ -167,7 +172,7 @@ export function matchArrayMapOptimized<T>(
         if (actualKey === ANY) {
           let found = false
           for (const [, expectedValues] of expectedFoundMap) {
-            if (f2(actualValues, expectedValues)) {
+            if (f2(actualValues, expectedValues, false)) {
               found = true
               break
             }
@@ -179,12 +184,12 @@ export function matchArrayMapOptimized<T>(
         else {
           let expectedValues = expectedFoundMap?.get(actualKey)
           let found = false
-          if (expectedValues && f2(actualValues, expectedValues)) {
+          if (expectedValues && f2(actualValues, expectedValues, false)) {
             found = true
           }
           if (!found) {
             expectedValues = expectedFoundMap?.get(ANY)
-            if (expectedValues && f2(actualValues, expectedValues)) {
+            if (expectedValues && f2(actualValues, expectedValues, false)) {
               found = true
             }
           }
@@ -212,7 +217,7 @@ export function matchArrayMapOptimized<T>(
         if (expectedKey === ANY) {
           let found = false
           for (const [, actualValues] of actualFoundMap) {
-            if (f2(expectedValues, actualValues)) {
+            if (f2(expectedValues, actualValues, true)) {
               found = true
               break
             }
@@ -224,12 +229,12 @@ export function matchArrayMapOptimized<T>(
         else {
           let actualValues = actualFoundMap?.get(expectedKey)
           let found = false
-          if (actualValues && f2(expectedValues, actualValues)) {
+          if (actualValues && f2(expectedValues, actualValues, true)) {
             found = true
           }
           if (!found) {
             actualValues = actualFoundMap?.get(ANY)
-            if (actualValues && f2(expectedValues, actualValues)) {
+            if (actualValues && f2(expectedValues, actualValues, true)) {
               found = true
             }
           }
