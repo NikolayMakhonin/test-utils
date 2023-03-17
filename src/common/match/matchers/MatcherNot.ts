@@ -18,7 +18,7 @@ export class MatcherNot<
     return {
       result: !nested.result,
       nested: [{
-        key   : null,
+        actualKey   : null,
         result: nested,
       }],
     }
@@ -29,7 +29,7 @@ export class MatcherNot<
     return {
       result: !nested.result,
       nested: [{
-        key   : null,
+        actualKey   : null,
         result: nested,
       }],
     }

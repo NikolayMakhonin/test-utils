@@ -64,8 +64,8 @@ describe('match > matchers > MatcherObject', function () {
         for (const key in expected) {
           if (Object.prototype.hasOwnProperty.call(expected, key)) {
             nested.push({
-              key,
-              result: {
+              actualKey: key,
+              result   : {
                 actual  : actual[key],
                 expected: expected[key],
                 result  : true,
@@ -158,8 +158,8 @@ describe('match > matchers > MatcherObject', function () {
           return [null]
         }
         const nested = [{
-          key   : diffValueKey,
-          result: {
+          actualKey: diffValueKey,
+          result   : {
             actual  : actual[diffValueKey],
             expected: expected[diffValueKey],
             result  : false,

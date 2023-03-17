@@ -18,8 +18,8 @@ describe('match > matchers > MatcherNot', function () {
       result       : [false],
       cause        : [null],
       nested       : ({actual, matcherNested, result}) => [[{
-        key   : null,
-        result: {
+        actualKey: null,
+        result   : {
           actual,
           expected: matcherNested,
           result  : !result,
@@ -44,8 +44,8 @@ describe('match > matchers > MatcherNot', function () {
       result       : [true],
       cause        : [null],
       nested       : ({actual, matcherNested, result}) => [[{
-        key   : null,
-        result: {
+        actualKey: null,
+        result   : {
           actual,
           expected: matcherNested,
           result  : !result,

@@ -60,7 +60,7 @@ export class MatcherIterator<
               cause : `actual iterator (index=${indexActual}) is done before expected iterator (index=${indexExpected})`,
               nested: [
                 {
-                  key   : indexActual,
+                  actualKey   : indexActual,
                   result: createMatchResultSync(
                     void 0,
                     expectedIteratorResult.value,
@@ -82,7 +82,7 @@ export class MatcherIterator<
               cause : `actual iterator (index=${indexActual}) is not done when expected iterator (index=${indexExpected}) is done`,
               nested: [
                 {
-                  key   : indexActual,
+                  actualKey   : indexActual,
                   result: createMatchResultSync(
                     actualIteratorResult.value,
                     void 0,
@@ -102,7 +102,7 @@ export class MatcherIterator<
         const matchResult = await matchAsync(actualIteratorResult.value, expectedIteratorResult.value)
 
         nested.push({
-          key   : indexActual,
+          actualKey   : indexActual,
           result: matchResult,
         })
 
@@ -128,7 +128,7 @@ export class MatcherIterator<
               result: false,
               nested: [
                 {
-                  key   : indexActual,
+                  actualKey   : indexActual,
                   result: matchResult,
                 },
               ],
@@ -156,7 +156,7 @@ export class MatcherIterator<
             result: false,
             nested: [
               {
-                key   : indexActual,
+                actualKey   : indexActual,
                 result: matchResult,
               },
             ],
@@ -194,7 +194,7 @@ export class MatcherIterator<
           result: false,
           nested: [
             {
-              key   : index,
+              actualKey   : index,
               result: matchResult,
             },
           ],
@@ -210,7 +210,7 @@ export class MatcherIterator<
             cause : `actual iterator length (${index}) < expected iterator length`,
             nested: [
               {
-                key   : index,
+                actualKey   : index,
                 result: createMatchResultSync(
                   void 0,
                   expectedIteratorResult.value,
@@ -229,7 +229,7 @@ export class MatcherIterator<
             cause : `actual iterator length > expected iterator length (${index})`,
             nested: [
               {
-                key   : index,
+                actualKey   : index,
                 result: createMatchResultSync(
                   actualIteratorResult.value,
                   void 0,
@@ -249,7 +249,7 @@ export class MatcherIterator<
       index++
 
       nested.push({
-        key   : index,
+        actualKey   : index,
         result: matchResult,
       })
     }

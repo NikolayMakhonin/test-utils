@@ -48,14 +48,14 @@ export class MatcherArray<
 
       if (!result.result) {
         nestedFalse.push({
-          key: i,
+          actualKey: i,
           result,
         })
         return
       }
 
       nestedTrue.push({
-        key: i,
+        actualKey: i,
         result,
       })
     }))
@@ -99,7 +99,7 @@ export class MatcherArray<
 
       if (!result.result) {
         nestedFalse.push({
-          key: i,
+          actualKey: i,
           result,
         })
         return {
@@ -109,7 +109,7 @@ export class MatcherArray<
       }
 
       nestedTrue.push({
-        key: i,
+        actualKey: i,
         result,
       })
     }

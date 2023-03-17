@@ -52,14 +52,14 @@ export class MatcherObject<
 
       if (!result.result) {
         nestedFalse.push({
-          key,
+          actualKey: key,
           result,
         })
         return
       }
 
       nestedTrue.push({
-        key,
+        actualKey: key,
         result,
       })
     }))
@@ -106,7 +106,7 @@ export class MatcherObject<
 
         if (!result.result) {
           nestedFalse.push({
-            key,
+            actualKey: key,
             result,
           })
           return {
@@ -116,7 +116,7 @@ export class MatcherObject<
         }
 
         nestedTrue.push({
-          key,
+          actualKey: key,
           result,
         })
       }

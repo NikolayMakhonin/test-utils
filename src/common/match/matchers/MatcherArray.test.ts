@@ -51,8 +51,8 @@ describe('match > matchers > MatcherArray', function () {
         const nested = []
         for (let index = 0; index < expected.length; index++) {
           nested.push({
-            key   : index,
-            result: {
+            actualKey: index,
+            result   : {
               actual  : actual[index],
               expected: expected[index],
               result  : true,
@@ -125,8 +125,8 @@ describe('match > matchers > MatcherArray', function () {
           return [null]
         }
         const nested = [{
-          key   : diffValueIndex,
-          result: {
+          actualKey: diffValueIndex,
+          result   : {
             actual  : actual[diffValueIndex],
             expected: expected[diffValueIndex],
             result  : false,

@@ -1,5 +1,5 @@
 import {MatchArraySetOptions} from './contracts'
-import {ANY, MatchResult, MatchResult2, MatchResultNested} from 'src/common/match/contracts'
+import {ANY, MatchResult, MatchResult2, MatchResultNested, UNSET} from 'src/common/match/contracts'
 
 export function matchArrayMapOptimized<T>(
   actual: T[],
@@ -12,48 +12,63 @@ export function matchArrayMapOptimized<T>(
     throw new Error(`At least one of the options 'mayNotContains' or 'mayNotContained' should be false`)
   }
 
-  function addValue(map: Map<any, T[]> | null, key: any, value: T): Map<any, T[]> {
-    let values: T[]
+  type IndexValue<T> = {
+    index: number
+    value: T
+  }
+
+  function addValue(
+    map: Map<any, IndexValue<T>[]> | null,
+    key: any,
+    indexValue: IndexValue<T>,
+  ): Map<any, IndexValue<T>[]> {
+    let indexValues: IndexValue<T>[]
     if (!map) {
       map = new Map()
     }
     else {
-      values = map.get(key)
+      indexValues = map.get(key)
     }
 
-    if (!values) {
-      map.set(key, [value])
+    if (!indexValues) {
+      map.set(key, [indexValue])
     }
     else {
-      values.push(value)
+      indexValues.push(indexValue)
     }
 
     return map
   }
 
-  let expectedMap: Map<any, T[]>
+  let expectedMap: Map<any, IndexValue<T>[]>
   for (let i = 0, len = expected.length; i < len; i++) {
     const expectedItem = expected[i]
     const key = getKey(expectedItem)
-    expectedMap = addValue(expectedMap, key, expectedItem)
+    expectedMap = addValue(expectedMap, key, {
+      index: i,
+      value: expectedItem,
+    })
   }
 
-  let actualMap: Map<any, T[]>
+  let actualMap: Map<any, IndexValue<T>[]>
   for (let i = 0, len = actual.length; i < len; i++) {
     const actualItem = actual[i]
     const key = getKey(actualItem)
-    actualMap = addValue(actualMap, key, actualItem)
+    actualMap = addValue(actualMap, key, {
+      index: i,
+      value: actualItem,
+    })
   }
 
-  let actualFoundMap: Map<any, T[]>
-  let expectedFoundMap: Map<any, T[]>
+  let actualFoundMap: Map<any, IndexValue<T>[]>
+  let expectedFoundMap: Map<any, IndexValue<T>[]>
   const nestedTrue: MatchResultNested[] = []
 
   function f1(
     actualKey: any,
     expectedKey: any,
-    actualValues: T[],
-    expectedValues: T[],
+    actualValues: IndexValue<T>[],
+    expectedValues: IndexValue<T>[],
   ) {
     if (expectedValues?.length && actualValues?.length) {
       let actualIndex = 0
@@ -62,11 +77,12 @@ export function matchArrayMapOptimized<T>(
         let expectedIndex = 0
         while (expectedIndex < expectedValues.length) {
           const expectedValue = expectedValues[expectedIndex]
-          const matchResult = match(actualValue, expectedValue)
+          const matchResult = match(actualValue.value, expectedValue.value)
           if (matchResult.result) {
             nestedTrue.push({
-              key   : actualIndex,
-              result: matchResult,
+              actualKey  : actualIndex,
+              expectedKey: expectedIndex,
+              result     : matchResult,
             })
             actualValues[actualIndex] = actualValues[actualValues.length - 1]
             actualValues.length--
@@ -133,8 +149,10 @@ export function matchArrayMapOptimized<T>(
   }
 
   function f2(
-    actualValues: T[],
-    expectedValues: T[],
+    actualMap: Map<any, IndexValue<T>[]>,
+    actualKey: any,
+    actualValues: IndexValue<T>[],
+    expectedValues: IndexValue<T>[],
     isViceVersa: boolean,
   ) {
     for (let i = 0, len = actualValues.length; i < len; i++) {
@@ -142,13 +160,21 @@ export function matchArrayMapOptimized<T>(
       let found = false
       for (let j = 0, len = expectedValues.length; j < len; j++) {
         const expectedItem = expectedValues[j]
-        const matchResult = match(actualItem, expectedItem)
+        const matchResult = isViceVersa
+          ? match(expectedItem.value, actualItem.value)
+          : match(actualItem.value, expectedItem.value)
         if (matchResult.result) {
           nestedTrue.push({
-            key   : isViceVersa ? j : i,
-            result: matchResult,
+            actualKey  : isViceVersa ? j : i,
+            expectedKey: isViceVersa ? i : j,
+            result     : matchResult,
           })
           found = true
+          actualValues[i] = actualValues[actualValues.length - 1]
+          actualValues.length--
+          if (actualValues.length === 0) {
+            actualMap.delete(actualKey)
+          }
           break
         }
       }
@@ -169,16 +195,28 @@ export function matchArrayMapOptimized<T>(
 
     if (options?.actualRepeats) {
       if (!expectedFoundMap) {
+        const firstActualEntry: [any, IndexValue<T>[]] = actualMap.entries().next().value
         return {
           result: false,
-          nested: null,
+          nested: [{
+            actualKey  : firstActualEntry[1][0].index,
+            expectedKey: UNSET,
+            result     : {
+              actual  : firstActualEntry[1][0].value,
+              expected: UNSET,
+              result  : false,
+              cause   : null,
+              nested  : null,
+              error   : null,
+            },
+          }],
         }
       }
       for (const [actualKey, actualValues] of actualMap) {
         if (actualKey === ANY) {
           let found = false
           for (const [, expectedValues] of expectedFoundMap) {
-            if (f2(actualValues, expectedValues, false)) {
+            if (f2(actualMap, actualKey, actualValues, expectedValues, false)) {
               found = true
               break
             }
@@ -186,26 +224,48 @@ export function matchArrayMapOptimized<T>(
           if (!found) {
             return {
               result: false,
-              nested: null,
+              nested: [{
+                actualKey  : actualValues[0].index,
+                expectedKey: UNSET,
+                result     : {
+                  actual  : actualValues[0].value,
+                  expected: UNSET,
+                  result  : false,
+                  cause   : null,
+                  nested  : null,
+                  error   : null,
+                },
+              }],
             }
           }
         }
         else {
           let expectedValues = expectedFoundMap?.get(actualKey)
           let found = false
-          if (expectedValues && f2(actualValues, expectedValues, false)) {
+          if (expectedValues && f2(actualMap, actualKey, actualValues, expectedValues, false)) {
             found = true
           }
           if (!found) {
             expectedValues = expectedFoundMap?.get(ANY)
-            if (expectedValues && f2(actualValues, expectedValues, false)) {
+            if (expectedValues && f2(actualMap, actualKey, actualValues, expectedValues, false)) {
               found = true
             }
           }
           if (!found) {
             return {
               result: false,
-              nested: null,
+              nested: [{
+                actualKey  : actualValues[0].index,
+                expectedKey: UNSET,
+                result     : {
+                  actual  : actualValues[0].value,
+                  expected: UNSET,
+                  result  : false,
+                  cause   : null,
+                  nested  : null,
+                  error   : null,
+                },
+              }],
             }
           }
         }
@@ -238,7 +298,7 @@ export function matchArrayMapOptimized<T>(
         if (expectedKey === ANY) {
           let found = false
           for (const [, actualValues] of actualFoundMap) {
-            if (f2(expectedValues, actualValues, true)) {
+            if (f2(expectedMap, expectedKey, expectedValues, actualValues, true)) {
               found = true
               break
             }
@@ -253,12 +313,12 @@ export function matchArrayMapOptimized<T>(
         else {
           let actualValues = actualFoundMap?.get(expectedKey)
           let found = false
-          if (actualValues && f2(expectedValues, actualValues, true)) {
+          if (actualValues && f2(expectedMap, expectedKey, expectedValues, actualValues, true)) {
             found = true
           }
           if (!found) {
             actualValues = actualFoundMap?.get(ANY)
-            if (actualValues && f2(expectedValues, actualValues, true)) {
+            if (actualValues && f2(expectedMap, expectedKey, expectedValues, actualValues, true)) {
               found = true
             }
           }

@@ -81,7 +81,7 @@ export function matchArraySequence(
         return {
           result: false,
           nested: [nestedFalse || {
-            key   : indexActual,
+            actualKey   : indexActual,
             result: {
               actual  : actual[indexActual],
               expected: UNSET,
@@ -97,7 +97,7 @@ export function matchArraySequence(
         return {
           result: false,
           nested: [nestedFalse || {
-            key   : indexActual,
+            actualKey   : indexActual,
             result: {
               actual  : UNSET,
               expected: expected[indexExpected],
@@ -121,7 +121,7 @@ export function matchArraySequence(
 
     if (matchResult.result) {
       nestedTrue.push({
-        key   : indexActual,
+        actualKey   : indexActual,
         result: matchResult,
       })
 
@@ -140,7 +140,7 @@ export function matchArraySequence(
       if (nestedTrue.length > nestedTrueMaxLength) {
         nestedTrueMaxLength = nestedTrue.length
         nestedFalse = {
-          key   : indexActual,
+          actualKey   : indexActual,
           result: matchResult,
         }
       }

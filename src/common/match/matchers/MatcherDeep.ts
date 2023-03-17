@@ -67,14 +67,14 @@ export class MatcherDeep<
 
       if (!result.result) {
         nestedFalse.push({
-          key,
+          actualKey: key,
           result,
         })
         return
       }
 
       nestedTrue.push({
-        key,
+        actualKey: key,
         result,
       })
     }))
@@ -121,7 +121,7 @@ export class MatcherDeep<
 
         if (!result.result) {
           nestedFalse.push({
-            key,
+            actualKey: key,
             result,
           })
           return {
@@ -131,7 +131,7 @@ export class MatcherDeep<
         }
 
         nestedTrue.push({
-          key,
+          actualKey: key,
           result,
         })
       }

@@ -3,7 +3,8 @@ import type {Matcher} from './Matcher'
 export type PromiseLikeOrValue<T> = T | PromiseLike<T>
 
 export type MatchResultNested = {
-  key: string | number
+  actualKey: string | number
+  expectedKey?: string | number
   result: MatchResult<any>
 }
 
