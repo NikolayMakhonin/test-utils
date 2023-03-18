@@ -1,5 +1,6 @@
 import {MatchArraySetOptions} from './contracts'
 import {ANY, MatchResult, MatchResult2, MatchResultNested, UNSET} from 'src/common/match/contracts'
+import {createMatchResultSync} from 'src/common/match/match'
 
 export function matchArrayMapOptimized<T>(
   actual: T[],
@@ -185,6 +186,26 @@ export function matchArrayMapOptimized<T>(
     return true
   }
 
+  function f3(
+    actualItem: IndexValue<T>,
+    expectedMap: Map<any, IndexValue<T>[]>,
+    isViceVersa: boolean,
+  ) {
+    let expectedItem: IndexValue<T>
+    for (const [, expectedValues] of expectedFoundMap) {
+      for (let j = 0, len = expectedValues.length; j < len; j++) {
+        expectedItem = expectedValues[j]
+        const matchResult = isViceVersa
+          ? match(expectedItem.value, actualItem.value)
+          : match(actualItem.value, expectedItem.value)
+        if (matchResult.result) {
+          return expectedItem
+        }
+      }
+    }
+    return null
+  }
+
   if (actualMap?.size) {
     if (options?.mayNotContained) {
       return {
@@ -195,20 +216,13 @@ export function matchArrayMapOptimized<T>(
 
     if (options?.actualRepeats) {
       if (!expectedFoundMap) {
-        const firstActualEntry: [any, IndexValue<T>[]] = actualMap.entries().next().value
+        const actualItem: IndexValue<T> = actualMap.entries().next().value[1][0]
         return {
           result: false,
           nested: [{
-            actualKey  : firstActualEntry[1][0].index,
+            actualKey  : actualItem.index,
             expectedKey: UNSET,
-            result     : {
-              actual  : firstActualEntry[1][0].value,
-              expected: UNSET,
-              result  : false,
-              cause   : null,
-              nested  : null,
-              error   : null,
-            },
+            result     : createMatchResultSync(actualItem.value, UNSET, false),
           }],
         }
       }
@@ -227,14 +241,7 @@ export function matchArrayMapOptimized<T>(
               nested: [{
                 actualKey  : actualValues[0].index,
                 expectedKey: UNSET,
-                result     : {
-                  actual  : actualValues[0].value,
-                  expected: UNSET,
-                  result  : false,
-                  cause   : null,
-                  nested  : null,
-                  error   : null,
-                },
+                result     : createMatchResultSync(actualValues[0].value, UNSET, false),
               }],
             }
           }
@@ -257,14 +264,7 @@ export function matchArrayMapOptimized<T>(
               nested: [{
                 actualKey  : actualValues[0].index,
                 expectedKey: UNSET,
-                result     : {
-                  actual  : actualValues[0].value,
-                  expected: UNSET,
-                  result  : false,
-                  cause   : null,
-                  nested  : null,
-                  error   : null,
-                },
+                result     : createMatchResultSync(actualValues[0].value, UNSET, false),
               }],
             }
           }
@@ -272,9 +272,20 @@ export function matchArrayMapOptimized<T>(
       }
     }
     else {
+      const actualItem: IndexValue<T> = actualMap.entries().next().value[1][0]
+      const expectedItem = f3(actualItem, expectedFoundMap, false)
+
       return {
         result: false,
-        nested: null,
+        nested: [{
+          actualKey  : actualItem.index,
+          expectedKey: expectedItem ? expectedItem.value : UNSET,
+          result     : createMatchResultSync(
+            actualItem.value,
+            expectedItem ? expectedItem.value : UNSET,
+            expectedItem ? 'actual duplicate' : false,
+          ),
+        }],
       }
     }
   }
@@ -291,7 +302,11 @@ export function matchArrayMapOptimized<T>(
       if (!actualFoundMap) {
         return {
           result: false,
-          nested: null,
+          nested: [{
+            actualKey  : UNSET,
+            expectedKey: expectedMap.entries().next().value[1][0].index,
+            result     : createMatchResultSync(UNSET, expectedMap.entries().next().value[1][0].value, false),
+          }],
         }
       }
       for (const [expectedKey, expectedValues] of expectedMap) {
@@ -306,7 +321,11 @@ export function matchArrayMapOptimized<T>(
           if (!found) {
             return {
               result: false,
-              nested: null,
+              nested: [{
+                actualKey  : UNSET,
+                expectedKey: expectedValues[0].index,
+                result     : createMatchResultSync(UNSET, expectedValues[0].value, false),
+              }],
             }
           }
         }
@@ -325,16 +344,31 @@ export function matchArrayMapOptimized<T>(
           if (!found) {
             return {
               result: false,
-              nested: null,
+              nested: [{
+                actualKey  : UNSET,
+                expectedKey: expectedValues[0].index,
+                result     : createMatchResultSync(UNSET, expectedValues[0].value, false),
+              }],
             }
           }
         }
       }
     }
     else {
+      const expectedItem: IndexValue<T> = expectedMap.entries().next().value[1][0]
+      const actualItem = f3(expectedItem, actualFoundMap, true)
+
       return {
         result: false,
-        nested: null,
+        nested: [{
+          actualKey  : actualItem ? actualItem.value : UNSET,
+          expectedKey: expectedItem.index,
+          result     : createMatchResultSync(
+            actualItem ? actualItem.value : UNSET,
+            expectedItem.value,
+            actualItem ? 'expected duplicate' : false,
+          ),
+        }],
       }
     }
   }
