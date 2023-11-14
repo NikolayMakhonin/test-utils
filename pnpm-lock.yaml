@@ -41,8 +41,8 @@ devDependencies:
     specifier: 0.0.0
     version: 0.0.0
   '@flemist/test-variants':
-    specifier: 1.0.0
-    version: 1.0.0
+    specifier: 1.0.2
+    version: 1.0.2
   '@rollup/plugin-alias':
     specifier: 3.1.9
     version: 3.1.9(rollup@2.75.7)
@@ -1401,7 +1401,6 @@ packages:
       '@flemist/abort-controller-fast': 1.0.0
       '@flemist/time-controller': 1.0.0
       tslib: 2.4.0
-    dev: false
 
   /@flemist/copy-glob-flat@0.0.5:
     resolution: {integrity: sha512-nw2x3zS78uRv7jlR709oXiMXhtTlTS2+WJiy3aTabcayv50CNHMKXevv9WR7YjUJzS7743EdPJl5wAKjIq9Fdg==}
@@ -1422,13 +1421,25 @@ packages:
     engines: {node: '>=10.4.0'}
     dependencies:
       tslib: 2.4.0
-    dev: false
 
-  /@flemist/test-variants@1.0.0:
-    resolution: {integrity: sha512-jtgSweA1H9nhTQz2pihUEamXMupEWLItnOvviE+n/OyZqFeR+HgRO2SoSnf0v1SH1wNnznW/VSV1L7/x8tAc1Q==}
+  /@flemist/priority-queue@1.0.0:
+    resolution: {integrity: sha512-B9gzh3Tcjlz8C/e5bMFLKVVGPa9MX/TC2OTWmMVRMOoIUHXIkOsp6m8zFTt77iCDoL0/d15LpA7SieqwHB/WTw==}
+    engines: {node: '>=12.9.0'}
+    dependencies:
+      '@flemist/abort-controller-fast': 1.0.0
+      '@flemist/async-utils': 1.0.0
+      '@flemist/pairing-heap': 1.0.0
+      '@flemist/time-controller': 1.0.0
+      tslib: 2.4.0
+    dev: true
+
+  /@flemist/test-variants@1.0.2:
+    resolution: {integrity: sha512-IcEiQDdyv6LLi3XfoqdHJZ1AHXbs8EahL1V5f8gMWD+eOxhU8NyhhVZFgj9wG74BxU8xZ4yKm04/Wgp1JKGKYA==}
     engines: {node: '>=10.4.0', pnpm: '>=7.1.6'}
     dependencies:
       '@flemist/abort-controller-fast': 1.0.0
+      '@flemist/async-utils': 1.0.0
+      '@flemist/time-limits': 1.0.1
       tslib: 2.4.0
     dev: true
 
@@ -1438,7 +1449,17 @@ packages:
     dependencies:
       '@flemist/pairing-heap': 1.0.0
       tslib: 2.4.0
-    dev: false
+
+  /@flemist/time-limits@1.0.1:
+    resolution: {integrity: sha512-/sOW+hSzJ4PnNiZGWOTlKjWxRsT2Mv6UvjFixc6EO7DnAkv1VRHDXu7dAbTwsV3iUs6dqITqW7+YAXOmLRr6Kg==}
+    engines: {node: '>=10.4.0'}
+    dependencies:
+      '@flemist/abort-controller-fast': 1.0.0
+      '@flemist/async-utils': 1.0.0
+      '@flemist/priority-queue': 1.0.0
+      '@flemist/time-controller': 1.0.0
+      tslib: 2.4.0
+    dev: true
 
   /@humanwhocodes/config-array@0.9.5:
     resolution: {integrity: sha512-ObyMyWxZiCu/yTisA7uzx81s40xR2fD5Cg/2Kq7G02ajkNubJf6BopgDTmDyc3U7sXpNKM8cYOw7s7Tyr+DnCw==}
