@@ -1,4 +1,4 @@
-import { expectEquals, expectedToString } from './helpers.mjs';
+import { expectedToString, expectEquals } from './helpers.mjs';
 
 function expectArrayItems(expected, options = {}) {
     function _expectArrayItems(receivedArray) {
