@@ -1,6 +1,6 @@
 import '../../common/register/register.mjs';
-import expect from './expect/expect.mjs';
+import './expect.mjs';
+import { expect } from 'expect';
 import 'assert';
-import 'expect';
 
 global.expect = expect;

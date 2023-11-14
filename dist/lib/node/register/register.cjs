@@ -1,8 +1,8 @@
 'use strict';
 
 require('../../common/register/register.cjs');
-var node_register_expect_expect = require('./expect/expect.cjs');
+require('./expect.cjs');
+var expect = require('expect');
 require('assert');
-require('expect');
 
-global.expect = node_register_expect_expect["default"];
+global.expect = expect.expect;

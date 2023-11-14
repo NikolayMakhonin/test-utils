@@ -1,5 +1,5 @@
 import 'src/common/register/register'
-import _expect from 'src/node/register/expect/expect'
+import _expect from './expect'
 
 ;(global as any).expect = _expect
 
