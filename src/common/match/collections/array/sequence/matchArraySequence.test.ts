@@ -35,10 +35,134 @@ describe('matchArraySequence', function () {
       repeats,
       breaks,
     })
+
     assert.strictEqual(resultActual.result, result)
+    assert.strictEqual(resultActual.cause, void 0)
+    if (result) {
+      assert.ok(resultActual.nested.length > 0)
+      resultActual.nested.forEach((nested, i) => {
+        assert.strictEqual(typeof nested.actualKey === 'number', true)
+        assert.strictEqual(typeof nested.expectedKey === 'number', true)
+        assert.strictEqual(nested.result.result, true)
+        assert.strictEqual(nested.result.cause, null)
+        assert.strictEqual(nested.result.nested, null)
+      })
+    }
+    else {
+      assert.strictEqual(resultActual.nested.length, 1)
+      const nested = resultActual.nested[0]
+      assert.strictEqual(typeof nested.actualKey === 'number', true)
+      assert.strictEqual(typeof nested.expectedKey === 'number', true)
+      assert.strictEqual(nested.result.result, false)
+      assert.strictEqual(nested.result.cause, null)
+      assert.strictEqual(nested.result.nested, null)
+    }
   })
 
   it('variants', async function () {
+    await testVariants<{
+      resultFalseType: string
+      values: number[]
+      actualValues: number[]
+      repeatsValues: number[]
+      breaksValues: number[]
+      actualMayNotStartWithValues: number[]
+      actualMayNotEndWithValues: number[]
+      expectedMayNotStartWithValues: number[]
+      expectedMayNotEndWithValues: number[]
+    }>({
+      result                 : [true, false],
+      actualMayNotStartWith  : [false, true],
+      actualMayNotEndWith    : [false, true],
+      expectedMayNotStartWith: ({actualMayNotStartWith, actualMayNotEndWith}) =>
+        actualMayNotStartWith || actualMayNotEndWith ? [false] : [false, true],
+      expectedMayNotEndWith: ({actualMayNotStartWith, actualMayNotEndWith, expectedMayNotStartWith}) =>
+        actualMayNotStartWith || actualMayNotEndWith ? [false] : [false, true],
+      repeats        : [false, true],
+      breaks         : [false, true],
+      resultFalseType: ({
+        result,
+        actualMayNotStartWith, actualMayNotEndWith,
+        expectedMayNotStartWith, expectedMayNotEndWith,
+        repeats, breaks,
+      }) => result
+        ? ['']
+        : [
+          'actual',
+          ...!actualMayNotStartWith ? ['actualMayNotStartWith'] : [],
+          ...!actualMayNotEndWith ? ['actualMayNotEndWith'] : [],
+          ...!expectedMayNotStartWith ? ['expectedMayNotStartWith'] : [],
+          ...!expectedMayNotEndWith ? ['expectedMayNotEndWith'] : [],
+          ...!repeats && !breaks ? ['repeats'] : [],
+          ...!breaks ? ['breaks'] : [],
+        ],
+      values      : [[], [1], [1, 2], [1, 2, 1], [1, 2, 1, 2], [1, 2, 3]],
+      actualValues: ({result, resultFalseType, values, expectedMayNotStartWith, expectedMayNotEndWith}) => values.length === 0 ? [] : [
+        ...!result && resultFalseType === 'actual'
+          ? [
+            ...!expectedMayNotStartWith && (values.length > 1 || !expectedMayNotEndWith) ? [values.slice(1)] : [],
+            ...!expectedMayNotEndWith && (values.length > 1 || !expectedMayNotStartWith) ? [values.slice(0, values.length - 1)] : [],
+          ]
+          : [values],
+      ],
+      breaksValues: ({result, resultFalseType, actualValues: values, breaks}) => [
+        ...result || resultFalseType !== 'breaks'
+          ? [values]
+          : [],
+        ...resultFalseType === 'breaks' || result && breaks && values.length > 1
+          ? Array.from({length: values.length - 1}, (_, i) => addBreaks(values, i + 1, 1))
+          : [],
+      ],
+      repeatsValues: ({
+        result, resultFalseType, actualMayNotStartWith, actualMayNotEndWith, breaksValues: values, repeats,
+      }) => [
+        ...result || resultFalseType !== 'repeats'
+          ? [values]
+          : [],
+        ...resultFalseType === 'repeats' || result && repeats && values.length > 0
+          ? values.map((_, i) => actualMayNotStartWith && i === 0 ? null
+            : actualMayNotEndWith && i === values.length - 1 ? null
+              : addRepeats(values, i, 1)).filter(o => o)
+          : [],
+      ],
+      actualMayNotStartWithValues: ({result, resultFalseType, repeatsValues: values, actualMayNotStartWith}) => [
+        ...result || resultFalseType !== 'actualMayNotStartWith'
+          ? [values]
+          : [],
+        ...resultFalseType === 'actualMayNotStartWith' || result && actualMayNotStartWith
+          ? [[0, ...values]]
+          : [],
+      ],
+      actualMayNotEndWithValues: ({result, resultFalseType, actualMayNotStartWithValues: values, actualMayNotEndWith}) => [
+        ...result || resultFalseType !== 'actualMayNotEndWith'
+          ? [values]
+          : [],
+        ...resultFalseType === 'actualMayNotEndWith' || result && actualMayNotEndWith
+          ? [[...values, 0]]
+          : [],
+      ],
+      expectedMayNotStartWithValues: ({result, resultFalseType, values, expectedMayNotStartWith}) => [
+        ...result || resultFalseType !== 'expectedMayNotStartWith'
+          ? [values]
+          : [],
+        ...resultFalseType === 'expectedMayNotStartWith' || result && expectedMayNotStartWith
+          ? [[0, ...values]]
+          : [],
+      ],
+      expectedMayNotEndWithValues: ({result, resultFalseType, expectedMayNotStartWithValues: values, expectedMayNotEndWith}) => [
+        ...result || resultFalseType !== 'expectedMayNotEndWith'
+          ? [values]
+          : [],
+        ...resultFalseType === 'expectedMayNotEndWith' || result && expectedMayNotEndWith
+          ? [[...values, 0]]
+          : [],
+      ],
+      expected: ({expectedMayNotEndWithValues: values}) => [values],
+      actual  : ({actualMayNotEndWithValues: values}) => [values],
+    })()
+  })
+
+  it('variants old', async function () {
     await testVariants<{
       actualValues: number[]
     }>({
@@ -156,108 +280,5 @@ describe('matchArraySequence', function () {
 
     assert.strictEqual(false, matchArraySequence([0, 1, 2, 3], [1, 2, 3], isMatcher, match, {actualMayNotStartWith: false, actualMayNotEndWith: false, repeats: false, breaks: true}).result)
 
-  })
-
-  it('variants 2', async function () {
-    await testVariants<{
-      resultFalseType: string
-      values: number[]
-      actualValues: number[]
-      repeatsValues: number[]
-      breaksValues: number[]
-      actualMayNotStartWithValues: number[]
-      actualMayNotEndWithValues: number[]
-      expectedMayNotStartWithValues: number[]
-      expectedMayNotEndWithValues: number[]
-    }>({
-      result                 : [true, false],
-      actualMayNotStartWith  : [false, true],
-      actualMayNotEndWith    : [false, true],
-      expectedMayNotStartWith: ({actualMayNotStartWith, actualMayNotEndWith}) =>
-        actualMayNotStartWith || actualMayNotEndWith ? [false] : [false, true],
-      expectedMayNotEndWith: ({actualMayNotStartWith, actualMayNotEndWith, expectedMayNotStartWith}) =>
-        actualMayNotStartWith || actualMayNotEndWith ? [false] : [false, true],
-      repeats        : [false, true],
-      breaks         : [false, true],
-      resultFalseType: ({
-        result,
-        actualMayNotStartWith, actualMayNotEndWith,
-        expectedMayNotStartWith, expectedMayNotEndWith,
-        repeats, breaks,
-      }) => result
-        ? ['']
-        : [
-          'actual',
-          ...!actualMayNotStartWith ? ['actualMayNotStartWith'] : [],
-          ...!actualMayNotEndWith ? ['actualMayNotEndWith'] : [],
-          ...!expectedMayNotStartWith ? ['expectedMayNotStartWith'] : [],
-          ...!expectedMayNotEndWith ? ['expectedMayNotEndWith'] : [],
-          ...!repeats && !breaks ? ['repeats'] : [],
-          ...!breaks ? ['breaks'] : [],
-        ],
-      values      : [[], [1], [1, 2], [1, 2, 1], [1, 2, 1, 2], [1, 2, 3]],
-      actualValues: ({result, resultFalseType, values, expectedMayNotStartWith, expectedMayNotEndWith}) => values.length === 0 ? [] : [
-        ...!result && resultFalseType === 'actual'
-          ? [
-            ...!expectedMayNotStartWith && (values.length > 1 || !expectedMayNotEndWith) ? [values.slice(1)] : [],
-            ...!expectedMayNotEndWith && (values.length > 1 || !expectedMayNotStartWith) ? [values.slice(0, values.length - 1)] : [],
-          ]
-          : [values],
-      ],
-      breaksValues: ({result, resultFalseType, actualValues: values, breaks}) => [
-        ...result || resultFalseType !== 'breaks'
-          ? [values]
-          : [],
-        ...resultFalseType === 'breaks' || result && breaks && values.length > 1
-          ? Array.from({length: values.length - 1}, (_, i) => addBreaks(values, i + 1, 1))
-          : [],
-      ],
-      repeatsValues: ({
-        result, resultFalseType, actualMayNotStartWith, actualMayNotEndWith, breaksValues: values, repeats,
-      }) => [
-        ...result || resultFalseType !== 'repeats'
-          ? [values]
-          : [],
-        ...resultFalseType === 'repeats' || result && repeats && values.length > 0
-          ? values.map((_, i) => actualMayNotStartWith && i === 0 ? null
-            : actualMayNotEndWith && i === values.length - 1 ? null
-              : addRepeats(values, i, 1)).filter(o => o)
-          : [],
-      ],
-      actualMayNotStartWithValues: ({result, resultFalseType, repeatsValues: values, actualMayNotStartWith}) => [
-        ...result || resultFalseType !== 'actualMayNotStartWith'
-          ? [values]
-          : [],
-        ...resultFalseType === 'actualMayNotStartWith' || result && actualMayNotStartWith
-          ? [[0, ...values]]
-          : [],
-      ],
-      actualMayNotEndWithValues: ({result, resultFalseType, actualMayNotStartWithValues: values, actualMayNotEndWith}) => [
-        ...result || resultFalseType !== 'actualMayNotEndWith'
-          ? [values]
-          : [],
-        ...resultFalseType === 'actualMayNotEndWith' || result && actualMayNotEndWith
-          ? [[...values, 0]]
-          : [],
-      ],
-      expectedMayNotStartWithValues: ({result, resultFalseType, values, expectedMayNotStartWith}) => [
-        ...result || resultFalseType !== 'expectedMayNotStartWith'
-          ? [values]
-          : [],
-        ...resultFalseType === 'expectedMayNotStartWith' || result && expectedMayNotStartWith
-          ? [[0, ...values]]
-          : [],
-      ],
-      expectedMayNotEndWithValues: ({result, resultFalseType, expectedMayNotStartWithValues: values, expectedMayNotEndWith}) => [
-        ...result || resultFalseType !== 'expectedMayNotEndWith'
-          ? [values]
-          : [],
-        ...resultFalseType === 'expectedMayNotEndWith' || result && expectedMayNotEndWith
-          ? [[...values, 0]]
-          : [],
-      ],
-      expected: ({expectedMayNotEndWithValues: values}) => [values],
-      actual  : ({actualMayNotEndWithValues: values}) => [values],
-    })()
   })
 })

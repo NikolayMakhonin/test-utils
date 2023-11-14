@@ -1,6 +1,6 @@
 {
   "name": "@flemist/test-utils",
-  "version": "0.1.4",
+  "version": "1.0.0",
   "description": "Small most frequently used platform independent test utils.",
   "main": "dist/lib/node/index.cjs",
   "module": "dist/lib/node/index.mjs",
@@ -63,7 +63,7 @@
   },
   "engines": {
     "node": ">=10.4.0",
-    "pnpm": "^7.1.6"
+    "pnpm": ">=7.1.6"
   },
   "repository": {
     "type": "git",
@@ -108,7 +108,7 @@
     "@babel/runtime-corejs3": "7.20.13",
     "@flemist/copy-glob-flat": "0.0.5",
     "@flemist/karma-custom-launcher": "0.0.0",
-    "@flemist/test-variants": "0.0.16",
+    "@flemist/test-variants": "1.0.0",
     "@rollup/plugin-alias": "3.1.9",
     "@rollup/plugin-babel": "6.0.3",
     "@rollup/plugin-commonjs": "=21.1.0",
@@ -151,8 +151,8 @@
     "expect": ">=24"
   },
   "dependencies": {
-    "@flemist/async-utils": "0.0.13",
-    "@flemist/time-controller": "0.0.1",
+    "@flemist/async-utils": "1.0.0",
+    "@flemist/time-controller": "1.0.0",
     "tslib": "^2.4.0"
   }
 }

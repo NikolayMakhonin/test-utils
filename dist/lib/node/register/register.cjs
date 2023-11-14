@@ -1,8 +1,8 @@
 'use strict';
 
 require('../../common/register/register.cjs');
-require('./expect.cjs');
-var expect = require('expect');
+var node_register_Deprecated_expect_expect = require('./-deprecated/expect/expect.cjs');
 require('assert');
+require('expect');
 
-global.expect = expect.expect;
+global.expect = node_register_Deprecated_expect_expect["default"];
