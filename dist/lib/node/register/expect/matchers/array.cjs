@@ -2,7 +2,7 @@
 
 Object.defineProperty(exports, '__esModule', { value: true });
 
-var node_register_Deprecated_expect_matchers_helpers = require('./helpers.cjs');
+var node_register_expect_matchers_helpers = require('./helpers.cjs');
 
 function expectArrayItems(expected, options = {}) {
     function _expectArrayItems(receivedArray) {
@@ -18,7 +18,7 @@ function expectArrayItems(expected, options = {}) {
         }
         for (let i = 0, len = receivedArray.length; i < len; i++) {
             const received = receivedArray[i];
-            const pass = node_register_Deprecated_expect_matchers_helpers.expectEquals(received, expected);
+            const pass = node_register_expect_matchers_helpers.expectEquals(received, expected);
             if (!pass) {
                 return {
                     pass: false,
@@ -32,7 +32,7 @@ function expectArrayItems(expected, options = {}) {
         };
     }
     _expectArrayItems.toString = function toString() {
-        return node_register_Deprecated_expect_matchers_helpers.expectedToString(expected);
+        return node_register_expect_matchers_helpers.expectedToString(expected);
     };
     return _expectArrayItems;
 }
@@ -48,7 +48,7 @@ function expectArrayLength(expected) {
                 message,
             };
         }
-        const pass = node_register_Deprecated_expect_matchers_helpers.expectEquals(receivedArray.length, expected);
+        const pass = node_register_expect_matchers_helpers.expectEquals(receivedArray.length, expected);
         return {
             pass,
             message,

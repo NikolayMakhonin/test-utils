@@ -2,7 +2,7 @@
 
 Object.defineProperty(exports, '__esModule', { value: true });
 
-var node_register_Deprecated_expect_matchers_helpers = require('./helpers.cjs');
+var node_register_expect_matchers_helpers = require('./helpers.cjs');
 
 function expectOr(...expecteds) {
     function _expectOr(received) {
@@ -14,7 +14,7 @@ function expectOr(...expecteds) {
         }
         for (let i = 0, len = expecteds.length; i < len; i++) {
             const expected = expecteds[i];
-            const pass = node_register_Deprecated_expect_matchers_helpers.expectEquals(received, expected);
+            const pass = node_register_expect_matchers_helpers.expectEquals(received, expected);
             if (pass) {
                 return {
                     pass: true,
@@ -29,7 +29,7 @@ function expectOr(...expecteds) {
     }
     _expectOr.toString = function toString() {
         return `or(${expecteds
-            .map(node_register_Deprecated_expect_matchers_helpers.expectedToString)
+            .map(node_register_expect_matchers_helpers.expectedToString)
             .join(' | ')})`;
     };
     return _expectOr;
@@ -44,7 +44,7 @@ function expectAnd(...expecteds) {
         }
         for (let i = 0, len = expecteds.length; i < len; i++) {
             const expected = expecteds[i];
-            const pass = node_register_Deprecated_expect_matchers_helpers.expectEquals(received, expected);
+            const pass = node_register_expect_matchers_helpers.expectEquals(received, expected);
             if (!pass) {
                 return {
                     pass: false,
@@ -59,7 +59,7 @@ function expectAnd(...expecteds) {
     }
     _expectAnd.toString = function toString() {
         return `and(${expecteds
-            .map(node_register_Deprecated_expect_matchers_helpers.expectedToString)
+            .map(node_register_expect_matchers_helpers.expectedToString)
             .join(' | ')})`;
     };
     return _expectAnd;

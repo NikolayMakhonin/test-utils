@@ -1,5 +1,5 @@
 import '../../common/register/register.mjs';
-import expect from './-deprecated/expect/expect.mjs';
+import expect from './expect/expect.mjs';
 import 'assert';
 import 'expect';
 

@@ -1,4 +1,4 @@
-import { expectedToString, expectEquals } from './helpers.mjs';
+import { expectEquals, expectedToString } from './helpers.mjs';
 
 function expectOr(...expecteds) {
     function _expectOr(received) {
